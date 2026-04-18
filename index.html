@@ -1,297 +1,330 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="fr" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TicketStonks V5 - Pro</title>
+<title>TicketStonks Arcade V5</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0a0a0b; --bg-card: #141417; --accent: #f5c542; --text: #ffffff;
-    --sub: #a1a1aa; --border: #27272a; --green: #22c55e; --red: #ef4444;
+    --color-bg: #0d0d0e; --color-surface: #151518; --color-surface-2: #1c1c21;
+    --color-primary: #5ac8a8; --color-gold: #f2c14e; --color-danger: #ff6b7a;
+    --color-text: #f2f5f7; --color-muted: #9ca7b4; --color-border: rgba(255,255,255,0.08);
+    --radius-xl: 1.25rem; --radius-lg: 0.75rem; --font-body: 'Satoshi', sans-serif;
   }
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; overflow: hidden; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--color-bg); color: var(--color-text); font-family: var(--font-body); overflow: hidden; }
 
-  /* Login & Screens */
-  #auth-screen, #game-screen, #admin-panel { display: none; height: 100vh; flex-direction: column; }
+  /* SCREENS */
+  #loading-screen, #auth-screen, #game-screen, #admin-screen { position: fixed; inset: 0; display: none; flex-direction: column; z-index: 100; }
   .active { display: flex !important; }
 
-  /* Auth UI */
-  #auth-screen { align-items: center; justify-content: center; background: radial-gradient(circle at center, #1e1e22 0%, #0a0a0b 100%); }
-  .auth-box { background: var(--bg-card); padding: 2.5rem; border-radius: 20px; border: 1px solid var(--border); width: 360px; text-align: center; }
-  .auth-box h1 { font-size: 2rem; color: var(--accent); margin-bottom: 2rem; letter-spacing: 2px; }
-  input { width: 100%; padding: 0.8rem; margin-bottom: 1rem; border-radius: 8px; border: 1px solid var(--border); background: #0a0a0b; color: #fff; outline: none; }
-  input:focus { border-color: var(--accent); }
-  button { padding: 0.8rem 1.5rem; border-radius: 8px; border: none; font-weight: 800; cursor: pointer; transition: 0.2s; text-transform: uppercase; }
-  .btn-primary { background: var(--accent); color: #000; width: 100%; }
-  .btn-primary:hover { transform: scale(1.02); }
+  /* LOADING */
+  #loading-screen { background: var(--color-bg); align-items: center; justify-content: center; }
+  .loader { width: 40px; height: 40px; border: 3px solid var(--color-border); border-top-color: var(--color-gold); border-radius: 50%; animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* Header */
-  header { padding: 1rem 2rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #0d0d0f; }
-  .stats { display: flex; gap: 2rem; align-items: center; }
-  .stat-val { font-weight: 800; color: var(--accent); }
+  /* AUTH */
+  #auth-screen { align-items: center; justify-content: center; background: radial-gradient(circle at center, #1a1a1d 0%, #0d0d0e 100%); }
+  .auth-card { background: var(--color-surface); padding: 2.5rem; border-radius: var(--radius-xl); border: 1px solid var(--color-border); width: 100%; max-width: 380px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+  .auth-card h1 { font-size: 2.2rem; font-weight: 900; color: var(--color-gold); margin-bottom: 2rem; letter-spacing: -0.02em; }
+  input { width: 100%; padding: 1rem; margin-bottom: 1rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border); background: #080809; color: #fff; outline: none; font-size: 1rem; }
+  input:focus { border-color: var(--color-gold); }
+  button { cursor: pointer; transition: 0.2s; border: none; font-weight: 800; font-family: inherit; }
+  .btn-auth { background: var(--color-gold); color: #000; width: 100%; padding: 1rem; border-radius: var(--radius-lg); text-transform: uppercase; font-size: 0.9rem; }
+  .btn-auth:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(242,193,78,0.2); }
 
-  /* XP Bar */
-  .xp-container { width: 250px; }
-  .xp-bar { height: 6px; background: #27272a; border-radius: 3px; overflow: hidden; margin-top: 4px; }
-  .xp-fill { height: 100%; background: linear-gradient(90deg, #f5c542, #fbbf24); transition: width 0.4s ease; }
+  /* GAME LAYOUT */
+  #game-screen { height: 100vh; overflow-y: auto; }
+  .topbar { padding: 1.25rem 2rem; background: var(--color-surface); border-bottom: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center; }
+  .brand { display: flex; align-items: center; gap: 0.75rem; font-weight: 900; color: var(--color-gold); font-size: 1.2rem; }
+  .stats-row { display: flex; gap: 1.5rem; align-items: center; }
+  .stat-pill { background: var(--color-surface-2); padding: 0.6rem 1rem; border-radius: var(--radius-lg); border: 1px solid var(--color-border); }
+  .stat-pill .label { font-size: 0.65rem; color: var(--color-muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .stat-pill strong { display: block; font-size: 1.1rem; color: var(--color-gold); }
 
-  /* Main Game */
-  main { flex: 1; display: flex; overflow: hidden; }
-  .sidebar { width: 260px; border-right: 1px solid var(--border); padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; background: #0d0d0f; }
-  .ticket-card { padding: 1rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; cursor: pointer; transition: 0.2s; position: relative; }
-  .ticket-card.active-t { border-color: var(--accent); box-shadow: 0 0 15px rgba(245,197,66,0.1); }
-  .ticket-card.locked { opacity: 0.3; cursor: not-allowed; }
+  .xp-area { width: 280px; }
+  .xp-bar { height: 8px; background: var(--color-surface-2); border-radius: 10px; overflow: hidden; margin-top: 4px; border: 1px solid var(--color-border); }
+  .xp-fill { height: 100%; background: linear-gradient(90deg, var(--color-primary), #66a3ff); transition: width 0.5s ease; }
 
-  .game-zone { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2rem; position: relative; }
-  .canvas-wrapper { position: relative; width: 420px; height: 260px; border-radius: 16px; overflow: hidden; border: 4px solid var(--border); background: #1a1a1d; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
-  canvas { cursor: crosshair; touch-action: none; position: relative; z-index: 2; }
-  .ticket-content { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1; text-align: center; }
+  main { display: grid; grid-template-columns: 300px 1fr; flex: 1; min-height: calc(100vh - 80px); }
+  .sidebar { padding: 2rem; border-right: 1px solid var(--color-border); background: #111114; display: flex; flex-direction: column; gap: 1rem; }
+  .ticket-card { padding: 1.25rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); cursor: pointer; transition: 0.2s; position: relative; }
+  .ticket-card.active { border-color: var(--color-primary); box-shadow: 0 0 20px rgba(90,200,168,0.1); }
+  .ticket-card.locked { opacity: 0.4; cursor: not-allowed; }
+  .tag { position: absolute; top: 0.75rem; right: 0.75rem; font-size: 0.6rem; font-weight: 900; padding: 2px 6px; border-radius: 4px; background: var(--color-surface-2); }
 
-  /* Loan Popup */
-  #loan-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--bg-card); border: 2px solid var(--accent); padding: 2rem; border-radius: 16px; z-index: 1000; display: none; text-align: center; box-shadow: 0 0 100px rgba(0,0,0,0.8); }
+  .play-zone { padding: 2rem; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2rem; }
+  .board-wrapper { position: relative; width: 500px; height: 320px; border-radius: 24px; overflow: hidden; border: 6px solid var(--color-surface-2); box-shadow: 0 30px 60px rgba(0,0,0,0.6); }
+  canvas { position: absolute; inset: 0; z-index: 10; cursor: crosshair; touch-action: none; position: relative; }
+  .underlay { position: absolute; inset: 0; z-index: 1; display: flex; align-items: center; justify-content: center; background: #fff; color: #111; }
 
-  /* Admin Panel */
-  #admin-panel { padding: 3rem; background: #0a0a0b; overflow-y: auto; }
-  table { width: 100%; border-collapse: collapse; margin-top: 2rem; }
-  th, td { padding: 1rem; border: 1px solid var(--border); text-align: left; }
-  th { background: #141417; color: var(--accent); }
+  .btn-buy { background: var(--color-primary); color: #08120f; padding: 1.2rem 3.5rem; border-radius: var(--radius-lg); font-size: 1rem; text-transform: uppercase; }
+  .btn-buy:hover:not(:disabled) { transform: scale(1.05); }
+  .btn-buy:disabled { opacity: 0.3; cursor: not-allowed; }
 
-  /* Animations */
-  #level-up { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; display: none; align-items: center; justify-content: center; font-size: 5rem; font-weight: 900; color: var(--accent); }
+  /* LOAN POPUP */
+  #loan-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--color-surface); border: 2px solid var(--color-gold); padding: 2.5rem; border-radius: var(--radius-xl); z-index: 1000; text-align: center; display: none; box-shadow: 0 0 100px rgba(0,0,0,0.9); }
+
+  /* ADMIN SCREEN */
+  #admin-screen { padding: 3rem; background: var(--color-bg); overflow-y: auto; }
+  table { width: 100%; border-collapse: collapse; margin-top: 2rem; background: var(--color-surface); border-radius: var(--radius-lg); overflow: hidden; }
+  th, td { padding: 1.25rem; border: 1px solid var(--color-border); text-align: left; }
+  th { background: #1a1a1e; color: var(--color-gold); font-size: 0.8rem; text-transform: uppercase; }
+
+  /* ANIMATIONS */
+  #lvl-up { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000; display: none; align-items: center; justify-content: center; font-size: 6rem; font-weight: 900; color: var(--color-gold); text-shadow: 0 0 50px rgba(242,193,78,0.5); }
 </style>
 </head>
 <body>
 
-<div id="auth-screen" class="active">
-  <div class="auth-box">
-    <h1>STONKS</h1>
+<div id="loading-screen" class="active"><div class="loader"></div></div>
+
+<div id="auth-screen">
+  <div class="auth-card">
+    <h1>TICKET STONKS</h1>
     <input type="text" id="username" placeholder="Nom d'utilisateur">
     <input type="password" id="password" placeholder="Mot de passe">
-    <button class="btn-primary" onclick="handleAuth()">Se connecter / S'inscrire</button>
+    <button class="btn-auth" onclick="handleAuth()">Connexion / Inscription</button>
+    <p style="color: var(--color-muted); font-size: 0.75rem; margin-top: 1.5rem;">Sauvegarde cloud locale via navigateur.</p>
   </div>
 </div>
 
 <div id="game-screen">
-  <header>
-    <div style="font-weight:900; color:var(--accent)">TICKET STONKS</div>
-    <div class="xp-container">
-      <div style="font-size:0.7rem; display:flex; justify-content:space-between">
-        <span>LVL <span id="lvl">1</span></span>
-        <span id="xp-text">0/100 XP</span>
+  <div class="topbar">
+    <div class="brand">🎰 TICKET STONKS</div>
+    <div class="xp-area">
+      <div style="display:flex; justify-content:space-between; font-size:0.7rem; font-weight:700">
+        <span>NIVEAU <span id="lvl">1</span></span>
+        <span id="xp-label">0/100 XP</span>
       </div>
       <div class="xp-bar"><div id="xp-fill" class="xp-fill" style="width:0%"></div></div>
     </div>
-    <div class="stats">
-      <button id="admin-btn" style="display:none; background:#7c3aed; padding:0.4rem 1rem; font-size:0.7rem" onclick="showAdmin()">PANEL ADMIN</button>
-      <div><span class="stat-val" id="money">500</span> $</div>
-      <div id="user-display" style="color:var(--sub); font-size:0.8rem"></div>
-      <button onclick="logout()" style="background:transparent; border:1px solid var(--border); font-size:0.7rem; padding:0.4rem">Sortir</button>
-    </div>
-  </header>
-  <main>
-    <div class="sidebar" id="ticket-list"></div>
-    <div class="game-zone">
-      <div class="canvas-wrapper">
-        <div class="ticket-content">
-          <div id="res-val" style="font-size:3rem; font-weight:900">---</div>
-          <div id="res-msg" style="color:var(--sub)">Gratte pour voir !</div>
-        </div>
-        <canvas id="canvas" width="420" height="260"></canvas>
+    <div class="stats-row">
+      <button id="admin-btn" style="display:none; background:#7c3aed; padding:0.5rem 1rem; border-radius:8px; font-size:0.7rem; color:white" onclick="showAdmin()">PANEL ADMIN</button>
+      <div class="stat-pill"><span class="label">Solde</span><strong id="money">500</strong></div>
+      <div id="user-info" style="font-size:0.8rem; border-left:1px solid var(--color-border); padding-left:1.5rem">
+        <span id="display-name" style="color:var(--color-muted)">---</span><br>
+        <button onclick="logout()" style="background:transparent; color:var(--color-danger); font-size:0.7rem; margin-top:2px">Dconnexion</button>
       </div>
-      <button id="buy-btn" class="btn-primary" style="width:auto; padding:1rem 3rem" onclick="buyTicket()">Acheter Ticket (10$)</button>
-      <div id="debt-info" style="color:var(--red); font-size:0.8rem; display:none">Dette: <span id="debt-val">0</span>$ (Prélèvement auto)</div>
     </div>
+  </div>
+  <main>
+    <aside class="sidebar" id="ticket-list"></aside>
+    <section class="play-zone">
+      <div class="board-wrapper" id="board">
+        <div class="underlay" id="result-ui">
+          <div style="text-align:center">
+            <div id="res-title" style="font-size:3.5rem; font-weight:900">---</div>
+            <div id="res-desc" style="font-size:1.1rem; color:#555">Gratte pour dcouvrir !</div>
+          </div>
+        </div>
+        <canvas id="scratchCanvas" width="500" height="320"></canvas>
+      </div>
+      <button class="btn-buy" id="buy-btn" onclick="buyTicket()">Acheter Ticket (10$)</button>
+      <div id="debt-tag" style="color:var(--color-danger); font-size:0.8rem; display:none; font-weight:700">Dette active: <span id="debt-val">0</span>$</div>
+    </section>
   </main>
 </div>
 
-<div id="admin-panel">
+<div id="admin-screen">
   <div style="display:flex; justify-content:space-between; align-items:center">
-    <h1 style="color:var(--accent)">PANEL ADMINISTRATION</h1>
-    <button onclick="hideAdmin()" class="btn-primary" style="width:auto">Retour au jeu</button>
+    <h1 style="font-weight:900; color:var(--color-gold)">DASHBOARD ADMIN</h1>
+    <button class="btn-buy" style="padding:0.7rem 2rem; width:auto" onclick="hideAdmin()">Retour</button>
   </div>
   <table id="user-table">
-    <thead>
-      <tr><th>User</th><th>Pass</th><th>Money</th><th>XP</th><th>LVL</th><th>Dette</th></tr>
-    </thead>
+    <thead><tr><th>Joueur</th><th>Pass (Clair)</th><th>Cr dits</th><th>XP</th><th>LVL</th><th>Dette</th></tr></thead>
     <tbody></tbody>
   </table>
 </div>
 
 <div id="loan-popup">
-  <h3>Besoin de crédits ?</h3>
-  <p style="color:var(--sub); margin:1rem 0">On te prête 100$ immédiatement.<br>Remboursement auto quand tu seras riche.</p>
-  <button class="btn-primary" onclick="takeLoan()">Accepter le prêt (+100$)</button>
+  <h2 style="font-weight:900; color:var(--color-gold)">PAS ASSEZ DE STONKS ?</h2>
+  <p style="color:var(--color-muted); margin:1.5rem 0; line-height:1.6">On te prête **100$** virtuels tout de suite.<br>On se servira sur tes prochains gains quand tu auras plus de **200$**.</p>
+  <button class="btn-auth" onclick="acceptLoan()">Prendre le prêt (+100$)</button>
 </div>
 
-<div id="level-up">LEVEL UP!</div>
+<div id="lvl-up">LEVEL UP!</div>
 
 <script>
-let users = JSON.parse(localStorage.getItem('stonks_users') || '{}');
-let currentUser = null;
+let state = {
+  users: JSON.parse(localStorage.getItem('ts_users') || '{}'),
+  current: null,
+  activeT: 't1',
+  isScratching: false,
+  scratchPercent: 0
+};
+
+const tickets = [
+  { id: 't1', name: 'Starter', cost: 10, lvl: 1, chance: 0.38, max: 40 },
+  { id: 't2', name: 'Silver', cost: 50, lvl: 3, chance: 0.3, max: 250 },
+  { id: 't3', name: 'Gold', cost: 200, lvl: 6, chance: 0.22, max: 1500 },
+  { id: 't4', name: 'Diamond', cost: 1000, lvl: 10, chance: 0.15, max: 10000 }
+];
+
+const canvas = document.getElementById('scratchCanvas');
+const ctx = canvas.getContext('2d');
+
+window.onload = () => {
+  setTimeout(() => {
+    document.getElementById('loading-screen').classList.remove('active');
+    document.getElementById('auth-screen').classList.add('active');
+  }, 1200);
+};
 
 function save() {
-  if(currentUser) users[currentUser.name] = currentUser;
-  localStorage.setItem('stonks_users', JSON.stringify(users));
+  if (state.current) state.users[state.current.name] = state.current;
+  localStorage.setItem('ts_users', JSON.stringify(state.users));
 }
 
 function handleAuth() {
-  const u = document.getElementById('username').value;
-  const p = document.getElementById('password').value;
-  if(!u || !p) return;
+  const u = document.getElementById('username').value.trim();
+  const p = document.getElementById('password').value.trim();
+  if (!u || !p) return;
 
-  if(users[u]) {
-    if(users[u].pass !== p) return alert('Mauvais mot de passe');
-    currentUser = users[u];
+  if (state.users[u]) {
+    if (state.users[u].pass !== p) return alert("Identifiants incorrects.");
+    state.current = state.users[u];
   } else {
-    currentUser = { name: u, pass: p, money: 500, xp: 0, lvl: 1, debt: 0 };
+    state.current = { name: u, pass: p, money: 500, xp: 0, lvl: 1, debt: 0 };
     save();
   }
-  
-  if(u === 'ADMIN' && p === '135975') document.getElementById('admin-btn').style.display = 'block';
+
+  if (u === 'ADMIN' && p === '135975') document.getElementById('admin-btn').style.display = 'block';
   
   document.getElementById('auth-screen').classList.remove('active');
   document.getElementById('game-screen').classList.add('active');
-  document.getElementById('user-display').innerText = currentUser.name;
+  document.getElementById('display-name').innerText = state.current.name;
   initGame();
 }
 
-function logout() { location.reload(); }
-
-// Game Logic
-const tickets = [
-  { id:'c', name:'Starter', price:10, lvl:1, chance:0.4, max:30 },
-  { id:'s', name:'Silver', price:50, lvl:3, chance:0.3, max:200 },
-  { id:'g', name:'Gold', price:200, lvl:7, chance:0.2, max:1500 }
-];
-let activeT = 'c';
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-
 function initGame() {
-  drawTickets();
+  renderTickets();
   updateUI();
   resetCanvas();
 }
 
 function resetCanvas() {
   ctx.globalCompositeOperation = 'source-over';
-  ctx.fillStyle = '#3f3f46';
+  const g = ctx.createLinearGradient(0,0,canvas.width,canvas.height);
+  g.addColorStop(0, '#c0c0c8'); g.addColorStop(0.5, '#a1a1aa'); g.addColorStop(1, '#81818b');
+  ctx.fillStyle = g;
   ctx.fillRect(0,0,canvas.width,canvas.height);
-  ctx.fillStyle = '#52525b';
-  for(let i=0; i<100; i++) {
-    ctx.beginPath();
-    ctx.arc(Math.random()*canvas.width, Math.random()*canvas.height, 2, 0, Math.PI*2);
-    ctx.fill();
-  }
+  
+  ctx.fillStyle = 'rgba(255,255,255,0.2)';
+  for(let i=0; i<canvas.width; i+=30) ctx.fillRect(i, 0, 10, canvas.height);
+  
   ctx.globalCompositeOperation = 'destination-out';
+  state.scratchPercent = 0;
 }
 
-function drawTickets() {
+function renderTickets() {
   const list = document.getElementById('ticket-list');
-  list.innerHTML = '<h3 style="font-size:0.7rem; color:var(--sub)">TICKETS</h3>';
+  list.innerHTML = '<h3 style="font-size:0.75rem; color:var(--color-muted); text-transform:uppercase">Collection</h3>';
   tickets.forEach(t => {
-    const locked = currentUser.lvl < t.lvl;
+    const locked = state.current.lvl < t.lvl;
     const div = document.createElement('div');
-    div.className = `ticket-card ${activeT === t.id ? 'active-t' : ''} ${locked ? 'locked' : ''}`;
-    div.innerHTML = `<div class="name">${t.name}</div><div style="font-size:0.7rem; color:var(--accent)">${t.price}$</div>`;
-    if(locked) div.innerHTML += `<div style="font-size:0.6rem; color:var(--red)">LVL ${t.lvl}</div>`;
-    else div.onclick = () => { activeT = t.id; drawTickets(); updateUI(); };
+    div.className = `ticket-card ${state.activeT === t.id ? 'active' : ''} ${locked ? 'locked' : ''}`;
+    div.innerHTML = `<strong>${t.name}</strong><div style="font-size:0.8rem; color:var(--color-gold)">${t.cost}$</div>`;
+    if(locked) div.innerHTML += `<div class="tag" style="color:var(--color-danger)">LVL ${t.lvl}</div>`;
+    else div.onclick = () => { state.activeT = t.id; renderTickets(); updateUI(); };
     list.appendChild(div);
   });
 }
 
 function updateUI() {
-  document.getElementById('money').innerText = currentUser.money;
-  document.getElementById('lvl').innerText = currentUser.lvl;
-  const nextXP = currentUser.lvl * 100;
-  document.getElementById('xp-text').innerText = `${currentUser.xp}/${nextXP} XP`;
-  document.getElementById('xp-fill').style.width = `${(currentUser.xp/nextXP)*100}%`;
+  const c = state.current;
+  document.getElementById('money').innerText = Math.floor(c.money);
+  document.getElementById('lvl').innerText = c.lvl;
+  const nextXP = c.lvl * 100;
+  document.getElementById('xp-label').innerText = `${c.xp}/${nextXP} XP`;
+  document.getElementById('xp-fill').style.width = `${(c.xp/nextXP)*100}%`;
+
+  const t = tickets.find(x => x.id === state.activeT);
+  document.getElementById('buy-btn').innerText = `Acheter ${t.name} (${t.cost}$)`;
   
-  const t = tickets.find(x => x.id === activeT);
-  document.getElementById('buy-btn').innerText = `Acheter ${t.name} (${t.price}$)`;
-  
-  if(currentUser.money < t.price) document.getElementById('loan-popup').style.display = 'block';
+  if (c.money < t.cost) document.getElementById('loan-popup').style.display = 'block';
   else document.getElementById('loan-popup').style.display = 'none';
 
-  if(currentUser.debt > 0) {
-    document.getElementById('debt-info').style.display = 'block';
-    document.getElementById('debt-val').innerText = currentUser.debt;
-  } else {
-    document.getElementById('debt-info').style.display = 'none';
-  }
+  if (c.debt > 0) {
+    document.getElementById('debt-tag').style.display = 'block';
+    document.getElementById('debt-val').innerText = c.debt;
+  } else document.getElementById('debt-tag').style.display = 'none';
 }
 
 function buyTicket() {
-  const t = tickets.find(x => x.id === activeT);
-  if(currentUser.money < t.price) return;
-  
-  currentUser.money -= t.price;
+  const t = tickets.find(x => x.id === state.activeT);
+  if (state.current.money < t.cost) return;
+
+  state.current.money -= t.cost;
   resetCanvas();
   
   const win = Math.random() < t.chance;
-  const val = win ? Math.floor(Math.random()*t.max)+1 : 0;
+  const val = win ? Math.floor(Math.random()*t.max) + 2 : 0;
   
-  document.getElementById('res-val').innerText = win ? `+${val}$` : 'PERDU';
-  document.getElementById('res-val').style.color = win ? 'var(--accent)' : 'var(--red)';
-  document.getElementById('res-msg').innerText = win ? 'Jackpot !' : 'Zéro...';
-  
-  if(win) {
-    currentUser.money += val;
-    // Auto repayment
-    if(currentUser.debt > 0 && currentUser.money >= currentUser.debt * 2) {
-      currentUser.money -= currentUser.debt;
-      currentUser.debt = 0;
+  document.getElementById('res-title').innerText = win ? `+${val}$` : 'PERDU';
+  document.getElementById('res-title').style.color = win ? 'var(--color-primary)' : 'var(--color-danger)';
+  document.getElementById('res-desc').innerText = win ? 'C\'est dans la poche !' : 'Zro point pointe.';
+
+  if (win) {
+    state.current.money += val;
+    // Auto pay debt if money > 2x debt
+    if (state.current.debt > 0 && state.current.money >= state.current.debt * 2) {
+      state.current.money -= state.current.debt;
+      state.current.debt = 0;
     }
   }
-  
-  currentUser.xp += Math.floor(t.price / 2);
-  if(currentUser.xp >= currentUser.lvl * 100) {
-    currentUser.lvl++;
-    currentUser.xp = 0;
-    document.getElementById('level-up').style.display = 'flex';
-    setTimeout(() => { document.getElementById('level-up').style.display = 'none'; drawTickets(); }, 2000);
+
+  state.current.xp += Math.floor(t.cost / 1.5);
+  if (state.current.xp >= state.current.lvl * 100) {
+    state.current.lvl++;
+    state.current.xp = 0;
+    document.getElementById('lvl-up').style.display = 'flex';
+    setTimeout(() => { document.getElementById('lvl-up').style.display = 'none'; renderTickets(); }, 1800);
   }
-  
+
   save();
   updateUI();
 }
 
-function takeLoan() {
-  currentUser.money += 100;
-  currentUser.debt += 100;
+function acceptLoan() {
+  state.current.money += 100;
+  state.current.debt += 100;
   save();
   updateUI();
 }
 
-// Scratch Logic
-let scratching = false;
-canvas.onmousedown = () => scratching = true;
-window.onmouseup = () => scratching = false;
+// SCRATCH LOGIC
+canvas.onmousedown = () => state.isScratching = true;
+window.onmouseup = () => state.isScratching = false;
 canvas.onmousemove = (e) => {
-  if(!scratching) return;
+  if (!state.isScratching) return;
   const r = canvas.getBoundingClientRect();
+  const x = e.clientX - r.left;
+  const y = e.clientY - r.top;
   ctx.beginPath();
-  ctx.arc(e.clientX - r.left, e.clientY - r.top, 25, 0, Math.PI*2);
+  ctx.arc(x, y, 28, 0, Math.PI*2);
   ctx.fill();
 };
 
-// Admin
 function showAdmin() {
   document.getElementById('game-screen').classList.remove('active');
-  document.getElementById('admin-panel').classList.add('active');
-  const tbody = document.querySelector('#user-table tbody');
-  tbody.innerHTML = '';
-  Object.values(users).forEach(u => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `<td>${u.name}</td><td>${u.pass}</td><td>${u.money}</td><td>${u.xp}</td><td>${u.lvl}</td><td>${u.debt}</td>`;
-    tbody.appendChild(tr);
+  document.getElementById('admin-screen').classList.add('active');
+  const body = document.querySelector('#user-table tbody');
+  body.innerHTML = '';
+  Object.values(state.users).forEach(u => {
+    body.innerHTML += `<tr><td>${u.name}</td><td style="font-family:monospace">${u.pass}</td><td>${u.money}</td><td>${u.xp}</td><td>${u.lvl}</td><td>${u.debt}</td></tr>`;
   });
 }
+
 function hideAdmin() {
-  document.getElementById('admin-panel').classList.remove('active');
+  document.getElementById('admin-screen').classList.remove('active');
   document.getElementById('game-screen').classList.add('active');
 }
+
+function logout() { location.reload(); }
 </script>
 </body>
 </html>
