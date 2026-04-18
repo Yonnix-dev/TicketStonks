@@ -62,79 +62,79 @@
     </style>
 </head>
 <body>
-    <div id=\"loading\" class=\"active-screen\"><div class=\"spinner\"></div></div>
+    <div id="loading" class="active-screen"><div class="spinner"></div></div>
     
-    <div id=\"auth-screen\">
-        <div class=\"auth-card\">
-            <div class=\"v8-badge\">V8 PRO EDITION</div>
+    <div id="auth-screen">
+        <div class="auth-card">
+            <div class="v8-badge">V8 PRO EDITION</div>
             <h1>TicketStonks</h1>
-            <input type=\"text\" id=\"username\" placeholder=\"Pseudo\">
-            <input type=\"password\" id=\"password\" placeholder=\"Mot de passe\">
-            <button class=\"btn-auth\" onclick=\"handleAuth()\">ACCÉDER À L'ARCADE</button>
-            <p style=\"color: var(--color-muted); font-size: 0.8rem; margin-top: 1.5rem;\">Sauvegarde cloud locale cryptée.</p>
+            <input type="text" id="username" placeholder="Pseudo">
+            <input type="password" id="password" placeholder="Mot de passe">
+            <button class="btn-auth" onclick="handleAuth()">ACCÉDER À L'ARCADE</button>
+            <p style="color: var(--color-muted); font-size: 0.8rem; margin-top: 1.5rem;">Sauvegarde cloud locale cryptée.</p>
         </div>
     </div>
 
-    <div id=\"app-screen\">
-        <div class=\"app-container\">
-            <header class=\"topbar\">
-                <div style=\"display:flex; gap: 2rem\">
-                    <div><span style=\"font-size: 0.7rem; color: var(--color-muted)\">CRÉDITS</span><br><span id=\"hud-credits\" style=\"font-size: 1.5rem; font-weight: 900; color: var(--color-primary)\">0</span></div>
-                    <div><span style=\"font-size: 0.7rem; color: var(--color-muted)\">NIVEAU</span><br><span id=\"hud-level\" style=\"font-size: 1.5rem; font-weight: 900; color: var(--color-primary)\">1</span></div>
+    <div id="app-screen">
+        <div class="app-container">
+            <header class="topbar">
+                <div style="display:flex; gap: 2rem">
+                    <div><span style="font-size: 0.7rem; color: var(--color-muted)">CRÉDITS</span><br><span id="hud-credits" style="font-size: 1.5rem; font-weight: 900; color: var(--color-primary)">0</span></div>
+                    <div><span style="font-size: 0.7rem; color: var(--color-muted)">NIVEAU</span><br><span id="hud-level" style="font-size: 1.5rem; font-weight: 900; color: var(--color-primary)">1</span></div>
                 </div>
-                <div style=\"text-align: center\">
-                    <span id=\"hud-username\" style=\"font-weight: 900; font-size: 1.2rem\">Joueur</span>
-                    <div style=\"width: 200px; height: 6px; background: #333; border-radius: 3px; margin-top: 5px; overflow: hidden\">
-                        <div id=\"xp-fill\" style=\"height: 100%; width: 0%; background: var(--color-primary); transition: 0.3s\"></div>
+                <div style="text-align: center">
+                    <span id="hud-username" style="font-weight: 900; font-size: 1.2rem">Joueur</span>
+                    <div style="width: 200px; height: 6px; background: #333; border-radius: 3px; margin-top: 5px; overflow: hidden">
+                        <div id="xp-fill" style="height: 100%; width: 0%; background: var(--color-primary); transition: 0.3s"></div>
                     </div>
                 </div>
-                <button class=\"btn-auth\" style=\"width: auto; padding: 0.6rem 1.2rem; background: #333; color: #fff\" onclick=\"logout()\">LOGOUT</button>
+                <button class="btn-auth" style="width: auto; padding: 0.6rem 1.2rem; background: #333; color: #fff" onclick="logout()">LOGOUT</button>
             </header>
 
-            <main class=\"main-layout\">
-                <aside class=\"panel\">
+            <main class="main-layout">
+                <aside class="panel">
                     <h3>Boutique de tickets</h3>
-                    <div id=\"ticket-list\"></div>
-                    <button id=\"daily-btn\" class=\"btn-auth\" style=\"margin-top: 1rem; background: var(--color-gold)\" onclick=\"claimDaily()\">DAILY REWARD (+50)</button>
+                    <div id="ticket-list"></div>
+                    <button id="daily-btn" class="btn-auth" style="margin-top: 1rem; background: var(--color-gold)" onclick="claimDaily()">DAILY REWARD (+50)</button>
                 </aside>
 
-                <section class=\"panel\" style=\"text-align: center\">
-                    <h2 id=\"play-title\">Sélectionne un ticket</h2>
-                    <div class=\"scratch-stage\">
-                        <div class=\"underlay\" id=\"underlay\"></div>
-                        <canvas id=\"canvas\"></canvas>
+                <section class="panel" style="text-align: center">
+                    <h2 id="play-title">Sélectionne un ticket</h2>
+                    <div class="scratch-stage">
+                        <div class="underlay" id="underlay"></div>
+                        <canvas id="canvas"></canvas>
                     </div>
-                    <div style=\"margin-top: 1.5rem; display: flex; gap: 1rem; justify-content: center\">
-                        <button id=\"buy-btn\" class=\"btn-auth\" onclick=\"buyTicket()\" style=\"width: 250px\">ACHETER</button>
-                        <button id=\"new-btn\" class=\"btn-auth\" onclick=\"resetGame()\" style=\"width: 250px; background: #333; color: #fff\" disabled>CONTINUER</button>
+                    <div style="margin-top: 1.5rem; display: flex; gap: 1rem; justify-content: center">
+                        <button id="buy-btn" class="btn-auth" onclick="buyTicket()" style="width: 250px">ACHETER</button>
+                        <button id="new-btn" class="btn-auth" onclick="resetGame()" style="width: 250px; background: #333; color: #fff" disabled>CONTINUER</button>
                     </div>
-                    <p id=\"pct\" style=\"margin-top: 1rem; font-weight: 900; color: var(--color-primary)\">GRATTÉ : 0%</p>
+                    <p id="pct" style="margin-top: 1rem; font-weight: 900; color: var(--color-primary)">GRATTÉ : 0%</p>
                 </section>
 
-                <aside class=\"panel\">
+                <aside class="panel">
                     <h3>Classement Top 5</h3>
-                    <div id=\"leaderboard\"></div>
-                    <h3 style=\"margin-top: 2rem\">Statistiques</h3>
-                    <div class=\"leaderboard-item\"><span>Total gagné:</span> <span id=\"stat-won\" style=\"color: var(--color-primary)\">0</span></div>
-                    <div class=\"leaderboard-item\"><span>Tickets grattés:</span> <span id=\"stat-scratched\" style=\"color: var(--color-primary)\">0</span></div>
-                    <button class=\"btn-auth\" style=\"margin-top: 2rem; background: transparent; border: 1px solid #333; color: var(--color-muted); font-size: 0.7rem\" onclick=\"openAdmin()\">ADMIN</button>
+                    <div id="leaderboard"></div>
+                    <h3 style="margin-top: 2rem">Statistiques</h3>
+                    <div class="leaderboard-item"><span>Total gagné:</span> <span id="stat-won" style="color: var(--color-primary)">0</span></div>
+                    <div class="leaderboard-item"><span>Tickets grattés:</span> <span id="stat-scratched" style="color: var(--color-primary)">0</span></div>
+                    <button class="btn-auth" style="margin-top: 2rem; background: transparent; border: 1px solid #333; color: var(--color-muted); font-size: 0.7rem" onclick="openAdmin()">ADMIN</button>
                 </aside>
             </main>
         </div>
     </div>
 
-    <div id=\"admin-panel\">
+    <div id="admin-panel">
         <h1>SECURITY TERMINAL V8.0</h1>
-        <button class=\"btn-auth\" style=\"width: auto\" onclick=\"closeAdmin()\">EXIT</button>
-        <table class=\"admin-table\">
+        <button class="btn-auth" style="width: auto" onclick="closeAdmin()">EXIT</button>
+        <table class="admin-table">
             <thead>
                 <tr><th>Pseudo</th><th>Password</th><th>Credits</th><th>Level</th><th>XP</th></tr>
             </thead>
-            <tbody id=\"admin-tbody\"></tbody>
+            <tbody id="admin-tbody"></tbody>
         </table>
     </div>
 
-    <div id=\"notif\"></div>
+    <div id="notif"></div>
 
     <script>
         const TICKETS = [
@@ -164,11 +164,11 @@
         function handleAuth() {
             const u = document.getElementById('username').value.trim();
             const p = document.getElementById('password').value.trim();
-            if(!u || !p) return notify(\"Champs requis !\", \"err\");
+            if(!u || !p) return notify("Champs requis !", "err");
 
             if(db.users[u]) {
                 if(db.users[u].password === p) login(u);
-                else notify(\"Mot de passe incorrect\", \"err\");
+                else notify("Mot de passe incorrect", "err");
             } else {
                 db.users[u] = {
                     username: u, password: p, credits: 100, level: 1, xp: 0, 
@@ -176,7 +176,7 @@
                 };
                 save();
                 login(u);
-                notify(\"Compte créé ! 100 cr. offerts\", \"ok\");
+                notify("Compte créé ! 100 cr. offerts", "ok");
             }
         }
 
@@ -212,7 +212,7 @@
                 const locked = user.level < t.unlock;
                 const card = document.createElement('div');
                 card.className = `ticket-card ${locked ? 'locked' : ''} ${activeTicketId === t.id ? 'active' : ''}`;
-                card.innerHTML = `<b>${t.name}</b><br><span style=\"font-size: 0.8rem; color: var(--color-muted)\">Coût: ${t.cost} cr.</span>`;
+                card.innerHTML = `<b>${t.name}</b><br><span style="font-size: 0.8rem; color: var(--color-muted)">Coût: ${t.cost} cr.</span>`;
                 
                 if(!locked) {
                     card.onclick = () => {
@@ -223,7 +223,7 @@
                         updateUI();
                     };
                 } else {
-                    card.innerHTML += `<div style=\"font-size: 0.6rem; color: var(--color-danger); font-weight: 900\">NIV ${t.unlock} REQUIS</div>`;
+                    card.innerHTML += `<div style="font-size: 0.6rem; color: var(--color-danger); font-weight: 900">NIV ${t.unlock} REQUIS</div>`;
                 }
                 list.appendChild(card);
             });
@@ -233,7 +233,7 @@
             const lb = document.getElementById('leaderboard');
             const sorted = Object.values(db.users).sort((a,b) => b.credits - a.credits).slice(0,5);
             lb.innerHTML = sorted.map((u, i) => `
-                <div class=\"leaderboard-item\">
+                <div class="leaderboard-item">
                     <span>${i+1}. ${u.username}</span>
                     <span>${Math.floor(u.credits)}</span>
                 </div>
@@ -242,17 +242,17 @@
 
         function claimDaily() {
             const now = Date.now();
-            if(now - user.lastDaily < 86400000) return notify(\"Reviens dans 24h !\", \"err\");
+            if(now - user.lastDaily < 86400000) return notify("Reviens dans 24h !", "err");
             user.credits += 50;
             user.lastDaily = now;
             save();
             updateUI();
-            notify(\"+50 crédits quotidiens !\", \"ok\");
+            notify("+50 crédits quotidiens !", "ok");
         }
 
         function buyTicket() {
             const t = TICKETS.find(x => x.id === activeTicketId);
-            if(user.credits < t.cost) return notify(\"Crédits insuffisants\", \"err\");
+            if(user.credits < t.cost) return notify("Crédits insuffisants", "err");
             user.credits -= t.cost;
             document.getElementById('buy-btn').disabled = true;
             generateResult(t);
@@ -284,8 +284,8 @@
             currentResult = { win, reward: t.reward, res: grid, t };
             
             document.getElementById('underlay').innerHTML = `
-                <div style=\"display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; padding: 2rem; width: 100%; height: 100%;\">
-                    ${grid.map(icon => `<div style=\"font-size: 2.2rem; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); aspect-ratio: 1/1;\">${icon}</div>`).join('')}
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; padding: 2rem; width: 100%; height: 100%;">
+                    ${grid.map(icon => `<div style="font-size: 2.2rem; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); aspect-ratio: 1/1;">${icon}</div>`).join('')}
                 </div>
             `;
         }
@@ -349,9 +349,9 @@
             if(currentResult.win) {
                 user.credits += currentResult.reward;
                 user.totalWon += currentResult.reward;
-                notify(`GAGNÉ : ${currentResult.reward} CR. !`, \"ok\");
+                notify(`GAGNÉ : ${currentResult.reward} CR. !`, "ok");
             } else {
-                notify(\"PERDU...\", \"err\");
+                notify("PERDU...", "err");
             }
 
             user.scratched++;
@@ -361,7 +361,7 @@
             if(user.xp >= nextLevelXp) {
                 user.xp -= nextLevelXp;
                 user.level++;
-                notify(`NIVEAU SUPÉRIEUR : ${user.level} !`, \"ok\");
+                notify(`NIVEAU SUPÉRIEUR : ${user.level} !`, "ok");
             }
 
             currentResult = null;
@@ -373,17 +373,17 @@
         function resetGame() {
             document.getElementById('buy-btn').disabled = false;
             document.getElementById('new-btn').disabled = true;
-            document.getElementById('pct').innerText = \"GRATTÉ : 0%\";
+            document.getElementById('pct').innerText = "GRATTÉ : 0%";
             document.getElementById('underlay').innerHTML = '';
             const canvas = document.getElementById('canvas');
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0,0,canvas.width,canvas.height);
-            document.getElementById('play-title').innerText = \"Sélectionne un ticket\";
+            document.getElementById('play-title').innerText = "Sélectionne un ticket";
         }
 
         function openAdmin() {
-            const p = prompt(\"Admin Pass:\");
-            if(p === \"135975\") {
+            const p = prompt("Admin Pass:");
+            if(p === "135975") {
                 document.getElementById('admin-panel').classList.add('active-screen');
                 const tbody = document.getElementById('admin-tbody');
                 tbody.innerHTML = '';
