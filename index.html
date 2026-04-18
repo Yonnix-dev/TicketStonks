@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TicketStonks V8 - Ultimate Pro Arcade</title>
+    <title>TicketStonks V9 - Ultimate Pro Arcade</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700,900&display=swap" rel="stylesheet">
+    <link href="https://api.fontshare.com/v2/css?f[]=satoshi@900,700,500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         :root {
             --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
@@ -14,13 +15,10 @@
             --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
             --text-lg: clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
             --text-xl: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
-            --space-1: 0.25rem;
-            --space-2: 0.5rem;
-            --space-4: 1rem;
-            --space-8: 2rem;
+            --space-1: 0.25rem; --space-2: 0.5rem; --space-4: 1rem; --space-8: 2rem;
             --radius-xl: 1.5rem;
             --color-bg: #0b0c0e;
-            --color-surface: #17191c;
+            --color-surface: rgba(23, 25, 28, 0.7);
             --color-primary: #5ac8a8;
             --color-blue: #66a3ff;
             --color-gold: #f2c14e;
@@ -28,33 +26,40 @@
             --color-text: #f2f5f7;
             --color-muted: #9ca7b4;
             --shadow-lg: 0 22px 60px rgba(0,0,0,0.34);
+            --glass: blur(12px);
         }
         * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
         body { font-family: 'Satoshi', sans-serif; background: var(--color-bg); color: var(--color-text); margin: 0; overflow-x: hidden; }
+        
         #auth-screen, #app-screen, #admin-panel, #loading { position: fixed; inset: 0; display: none; flex-direction: column; z-index: 10; }
         .active-screen { display: flex !important; }
+
         #loading { background: var(--color-bg); align-items: center; justify-content: center; z-index: 1000; }
         .spinner { width: 48px; height: 48px; border: 4px solid rgba(255,255,255,0.1); border-top-color: var(--color-primary); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
+
         #auth-screen { background: radial-gradient(circle at center, #1e2126 0%, #0b0c0e 100%); align-items: center; justify-content: center; }
-        .auth-card { background: var(--color-surface); padding: 2.5rem; border-radius: var(--radius-xl); border: 1px solid rgba(255,255,255,0.1); width: 400px; text-align: center; box-shadow: var(--shadow-lg); }
-        .auth-card input { width: 100%; padding: 1rem; margin-bottom: 1rem; border-radius: 0.8rem; background: #000; border: 1px solid rgba(255,255,255,0.1); color: #fff; font-family: inherit; }
+        .auth-card { background: var(--color-surface); backdrop-filter: var(--glass); padding: 2.5rem; border-radius: var(--radius-xl); border: 1px solid rgba(255,255,255,0.1); width: 400px; text-align: center; box-shadow: var(--shadow-lg); }
+        .auth-card input { width: 100%; padding: 1rem; margin-bottom: 1rem; border-radius: 0.8rem; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-family: inherit; }
         .btn-auth { width: 100%; padding: 1rem; border-radius: 0.8rem; background: var(--color-primary); color: #000; border: none; font-weight: 800; cursor: pointer; transition: 0.2s; }
+
         .app-container { max-width: 1400px; margin: 0 auto; padding: 1.5rem; display: grid; gap: 1.5rem; }
-        .topbar { display: flex; justify-content: space-between; align-items: center; background: var(--color-surface); padding: 1rem 2rem; border-radius: var(--radius-xl); border: 1px solid rgba(255,255,255,0.1); }
+        .topbar { display: flex; justify-content: space-between; align-items: center; background: var(--color-surface); backdrop-filter: var(--glass); padding: 1rem 2rem; border-radius: var(--radius-xl); border: 1px solid rgba(255,255,255,0.1); }
         .main-layout { display: grid; grid-template-columns: 320px 1fr 320px; gap: 1.5rem; }
-        .panel { background: var(--color-surface); padding: 1.5rem; border-radius: var(--radius-xl); border: 1px solid rgba(255,255,255,0.1); }
+        .panel { background: var(--color-surface); backdrop-filter: var(--glass); padding: 1.5rem; border-radius: var(--radius-xl); border: 1px solid rgba(255,255,255,0.1); }
+
         .ticket-card { padding: 1.25rem; margin-bottom: 0.75rem; background: rgba(255,255,255,0.03); border-radius: 1rem; cursor: pointer; border: 1px solid transparent; transition: 0.2s; position: relative; }
         .ticket-card:hover:not(.locked) { border-color: var(--color-primary); background: rgba(90,200,168,0.05); }
         .ticket-card.locked { opacity: 0.5; filter: grayscale(1); cursor: not-allowed; }
-        .scratch-stage { background: #f6edd0; border-radius: 2rem; height: 450px; position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+
+        .scratch-stage { background: #f6edd0; border-radius: 2rem; height: 450px; position: relative; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: inset 0 0 50px rgba(0,0,0,0.1); }
         #canvas { cursor: crosshair; z-index: 5; }
         .underlay { position: absolute; inset: 0; display: grid; place-items: center; z-index: 1; }
-        .leaderboard-item { display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .v8-badge { background: var(--color-primary); color: #000; font-size: 0.7rem; font-weight: 900; padding: 2px 8px; border-radius: 4px; display: inline-block; margin-bottom: 1rem; }
-        #admin-panel { background: #000; color: #0f0; font-family: 'Courier New', monospace; padding: 2rem; z-index: 1000; overflow-y: auto; }
-        .admin-table { width: 100%; border-collapse: collapse; margin-top: 1.5rem; }
-        .admin-table th, .admin-table td { border: 1px solid #0f0; padding: 12px; text-align: left; }
+
+        .btn-action { padding: 0.75rem 1.5rem; border-radius: 0.8rem; border: none; font-weight: 800; cursor: pointer; transition: 0.2s; }
+        .btn-primary { background: var(--color-primary); color: #000; }
+        .btn-secondary { background: rgba(255,255,255,0.1); color: #fff; }
+
         #notif { position: fixed; top: 100px; right: 20px; padding: 1rem 2rem; border-radius: 1rem; z-index: 2000; transform: translateX(200%); transition: 0.5s; font-weight: 800; }
         #notif.show { transform: translateX(0); }
         .nt-ok { background: var(--color-primary); color: #000; }
@@ -62,79 +67,67 @@
     </style>
 </head>
 <body>
-    <div id="loading" class="active-screen"><div class="spinner"></div></div>
-    
-    <div id="auth-screen">
-        <div class="auth-card">
-            <div class="v8-badge">V8 PRO EDITION</div>
-            <h1>TicketStonks</h1>
-            <input type="text" id="username" placeholder="Pseudo">
-            <input type="password" id="password" placeholder="Mot de passe">
-            <button class="btn-auth" onclick="handleAuth()">ACCÉDER À L'ARCADE</button>
-            <p style="color: var(--color-muted); font-size: 0.8rem; margin-top: 1.5rem;">Sauvegarde cloud locale cryptée.</p>
+    <div id=\"loading\" class=\"active-screen\"><div class=\"spinner\"></div></div>
+
+    <div id=\"auth-screen\">
+        <div class=\"auth-card\">
+            <div style=\"background:var(--color-primary); color:#000; font-size:0.7rem; font-weight:900; padding:2px 8px; border-radius:4px; display:inline-block; margin-bottom:1rem;\">V9 PRO EDITION</div>
+            <h1 style=\"margin:0 0 1.5rem 0; font-size:2rem; letter-spacing:-1px\">TicketStonks</h1>
+            <input type=\"text\" id=\"username\" placeholder=\"Pseudo\">
+            <input type=\"password\" id=\"password\" placeholder=\"Mot de passe\">
+            <button class=\"btn-auth\" onclick=\"handleAuth()\">ACCÉDER À L'ARCADE</button>
+            <p style=\"font-size: 0.8rem; color: var(--color-muted); margin-top: 1.5rem\">Sauvegarde cloud locale cryptée.</p>
         </div>
     </div>
 
-    <div id="app-screen">
-        <div class="app-container">
-            <header class="topbar">
-                <div style="display:flex; gap: 2rem">
-                    <div><span style="font-size: 0.7rem; color: var(--color-muted)">CRÉDITS</span><br><span id="hud-credits" style="font-size: 1.5rem; font-weight: 900; color: var(--color-primary)">0</span></div>
-                    <div><span style="font-size: 0.7rem; color: var(--color-muted)">NIVEAU</span><br><span id="hud-level" style="font-size: 1.5rem; font-weight: 900; color: var(--color-primary)">1</span></div>
+    <div id=\"app-screen\">
+        <div class=\"app-container\">
+            <div class=\"topbar\">
+                <div style=\"display:flex; gap:1.5rem\">
+                    <div><span style=\"font-size:0.6rem; color:var(--color-muted); font-weight:800; text-transform:uppercase\">Crédits</span><br><span id=\"hud-credits\" style=\"font-size:1.5rem; font-weight:900; color:var(--color-primary)\">0</span></div>
+                    <div><span style=\"font-size:0.6rem; color:var(--color-muted); font-weight:800; text-transform:uppercase\">Niveau</span><br><span id=\"hud-level\" style=\"font-size:1.5rem; font-weight:900\">1</span></div>
                 </div>
-                <div style="text-align: center">
-                    <span id="hud-username" style="font-weight: 900; font-size: 1.2rem">Joueur</span>
-                    <div style="width: 200px; height: 6px; background: #333; border-radius: 3px; margin-top: 5px; overflow: hidden">
-                        <div id="xp-fill" style="height: 100%; width: 0%; background: var(--color-primary); transition: 0.3s"></div>
-                    </div>
+                <div id=\"hud-username\" style=\"font-weight:900; font-size:1.2rem; border-bottom:2px solid var(--color-primary)\">Joueur</div>
+                <button class=\"btn-action btn-secondary\" onclick=\"logout()\">LOGOUT</button>
+            </div>
+
+            <div class=\"main-layout\">
+                <div class=\"panel\">
+                    <h3 style=\"margin-top:0\">Boutique de tickets</h3>
+                    <button class=\"btn-action btn-secondary\" style=\"width:100%; margin-bottom:1.5rem; background:var(--color-gold); color:#000\" onclick=\"claimDaily()\">DAILY REWARD (+50)</button>
+                    <div id=\"ticket-list\"></div>
                 </div>
-                <button class="btn-auth" style="width: auto; padding: 0.6rem 1.2rem; background: #333; color: #fff" onclick="logout()">LOGOUT</button>
-            </header>
 
-            <main class="main-layout">
-                <aside class="panel">
-                    <h3>Boutique de tickets</h3>
-                    <div id="ticket-list"></div>
-                    <button id="daily-btn" class="btn-auth" style="margin-top: 1rem; background: var(--color-gold)" onclick="claimDaily()">DAILY REWARD (+50)</button>
-                </aside>
-
-                <section class="panel" style="text-align: center">
-                    <h2 id="play-title">Sélectionne un ticket</h2>
-                    <div class="scratch-stage">
-                        <div class="underlay" id="underlay"></div>
-                        <canvas id="canvas"></canvas>
+                <div class=\"panel\" style=\"display:flex; flex-direction:column; gap:1.5rem\">
+                    <h2 id=\"play-title\" style=\"margin:0; text-align:center\">Sélectionne un ticket</h2>
+                    <div class=\"scratch-stage\">
+                        <div id=\"underlay\" class=\"underlay\"></div>
+                        <canvas id=\"canvas\"></canvas>
                     </div>
-                    <div style="margin-top: 1.5rem; display: flex; gap: 1rem; justify-content: center">
-                        <button id="buy-btn" class="btn-auth" onclick="buyTicket()" style="width: 250px">ACHETER</button>
-                        <button id="new-btn" class="btn-auth" onclick="resetGame()" style="width: 250px; background: #333; color: #fff" disabled>CONTINUER</button>
+                    <div style=\"display:flex; gap:1rem; justify-content:center; align-items:center\">
+                        <button id=\"buy-btn\" class=\"btn-action btn-primary\" style=\"flex:1\" onclick=\"buyTicket()\">ACHETER</button>
+                        <button id=\"scratch-all-btn\" class=\"btn-action btn-secondary\" onclick=\"scratchAll()\" disabled>TOUT GRATTER</button>
+                        <button id=\"new-btn\" class=\"btn-action btn-secondary\" onclick=\"resetGame()\" disabled>CONTINUER</button>
                     </div>
-                    <p id="pct" style="margin-top: 1rem; font-weight: 900; color: var(--color-primary)">GRATTÉ : 0%</p>
-                </section>
+                    <div id=\"pct\" style=\"text-align:center; font-weight:800; color:var(--color-muted)\">GRATTÉ : 0%</div>
+                </div>
 
-                <aside class="panel">
-                    <h3>Classement Top 5</h3>
-                    <div id="leaderboard"></div>
-                    <h3 style="margin-top: 2rem">Statistiques</h3>
-                    <div class="leaderboard-item"><span>Total gagné:</span> <span id="stat-won" style="color: var(--color-primary)">0</span></div>
-                    <div class="leaderboard-item"><span>Tickets grattés:</span> <span id="stat-scratched" style="color: var(--color-primary)">0</span></div>
-                    <button class="btn-auth" style="margin-top: 2rem; background: transparent; border: 1px solid #333; color: var(--color-muted); font-size: 0.7rem" onclick="openAdmin()">ADMIN</button>
-                </aside>
-            </main>
+                <div class=\"panel\">
+                    <h3 style=\"margin-top:0\">Classement Top 5</h3>
+                    <div id=\"leaderboard\"></div>
+                    
+                    <h3 style=\"margin-top:2rem\">Statistiques</h3>
+                    <div style=\"display:flex; flex-direction:column; gap:0.5rem\">
+                        <div style=\"display:flex; justify-content:space-between\"><span>Total gagné:</span><span id=\"stat-won\" style=\"color:var(--color-primary); font-weight:800\">0</span></div>
+                        <div style=\"display:flex; justify-content:space-between\"><span>Tickets grattés:</span><span id=\"stat-scratched\" style=\"font-weight:800\">0</span></div>
+                    </div>
+                    <button onclick=\"openAdmin()\" style=\"margin-top:2rem; background:none; border:none; color:rgba(255,255,255,0.05); cursor:pointer\">ADMIN</button>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div id="admin-panel">
-        <h1>SECURITY TERMINAL V8.0</h1>
-        <button class="btn-auth" style="width: auto" onclick="closeAdmin()">EXIT</button>
-        <table class="admin-table">
-            <thead>
-                <tr><th>Pseudo</th><th>Password</th><th>Credits</th><th>Level</th><th>XP</th></tr>
-            </thead>
-            <tbody id="admin-tbody"></tbody>
-        </table>
-    </div>
-
-    <div id="notif"></div>
+    <div id=\"notif\"></div>
 
     <script>
         const TICKETS = [
@@ -144,7 +137,7 @@
             { id: 'diamond', name: 'Diamant Éternel', cost: 1000, reward: 10000, unlock: 10, xp: 500, icons: ['💎','💍','👑','💰','✨'] }
         ];
 
-        let db = JSON.parse(localStorage.getItem('ts_v8_db')) || { users: {} };
+        let db = JSON.parse(localStorage.getItem('ts_v9_db')) || { users: {} };
         let user = null;
         let activeTicketId = 'starter';
         let isScratching = false;
@@ -154,29 +147,22 @@
             setTimeout(() => {
                 document.getElementById('loading').classList.remove('active-screen');
                 document.getElementById('auth-screen').classList.add('active-screen');
-            }, 1000);
+            }, 800);
         };
 
-        function save() {
-            localStorage.setItem('ts_v8_db', JSON.stringify(db));
-        }
+        function save() { localStorage.setItem('ts_v9_db', JSON.stringify(db)); }
 
         function handleAuth() {
             const u = document.getElementById('username').value.trim();
             const p = document.getElementById('password').value.trim();
-            if(!u || !p) return notify("Champs requis !", "err");
-
+            if(!u || !p) return notify(\"Champs requis !\", \"err\");
             if(db.users[u]) {
                 if(db.users[u].password === p) login(u);
-                else notify("Mot de passe incorrect", "err");
+                else notify(\"Mot de passe incorrect\", \"err\");
             } else {
-                db.users[u] = {
-                    username: u, password: p, credits: 100, level: 1, xp: 0, 
-                    totalWon: 0, scratched: 0, lastDaily: 0
-                };
-                save();
-                login(u);
-                notify("Compte créé ! 100 cr. offerts", "ok");
+                db.users[u] = { username: u, password: p, credits: 100, level: 1, xp: 0, totalWon: 0, scratched: 0, lastDaily: 0 };
+                save(); login(u);
+                notify(\"Compte créé ! 100 cr. offerts\", \"ok\");
             }
         }
 
@@ -196,11 +182,6 @@
             document.getElementById('hud-username').innerText = user.username;
             document.getElementById('stat-won').innerText = user.totalWon;
             document.getElementById('stat-scratched').innerText = user.scratched;
-
-            const nextLevelXp = user.level * 100;
-            const pct = (user.xp / nextLevelXp) * 100;
-            document.getElementById('xp-fill').style.width = pct + '%';
-
             renderTickets();
             renderLeaderboard();
         }
@@ -211,19 +192,18 @@
             TICKETS.forEach(t => {
                 const locked = user.level < t.unlock;
                 const card = document.createElement('div');
-                card.className = `ticket-card ${locked ? 'locked' : ''} ${activeTicketId === t.id ? 'active' : ''}`;
-                card.innerHTML = `<b>${t.name}</b><br><span style="font-size: 0.8rem; color: var(--color-muted)">Coût: ${t.cost} cr.</span>`;
-                
+                card.className = \`ticket-card \${locked ? 'locked' : ''} \${activeTicketId === t.id ? 'active' : ''}\`;
+                card.innerHTML = \`<b>\${t.name}</b><br><span style=\"font-size: 0.8rem; color: var(--color-muted)\">Coût: \${t.cost} cr.</span>\`;
                 if(!locked) {
                     card.onclick = () => {
                         activeTicketId = t.id;
                         document.getElementById('play-title').innerText = t.name;
-                        document.getElementById('buy-btn').innerText = `ACHETER (${t.cost} cr.)`;
+                        document.getElementById('buy-btn').innerText = \`ACHETER (\${t.cost} cr.)\`;
                         resetGame();
                         updateUI();
                     };
                 } else {
-                    card.innerHTML += `<div style="font-size: 0.6rem; color: var(--color-danger); font-weight: 900">NIV ${t.unlock} REQUIS</div>`;
+                    card.innerHTML += \`<div style=\"font-size: 0.6rem; color: var(--color-danger); font-weight: 900\">NIV \${t.unlock} REQUIS</div>\`;
                 }
                 list.appendChild(card);
             });
@@ -232,29 +212,29 @@
         function renderLeaderboard() {
             const lb = document.getElementById('leaderboard');
             const sorted = Object.values(db.users).sort((a,b) => b.credits - a.credits).slice(0,5);
-            lb.innerHTML = sorted.map((u, i) => `
-                <div class="leaderboard-item">
-                    <span>${i+1}. ${u.username}</span>
-                    <span>${Math.floor(u.credits)}</span>
+            lb.innerHTML = sorted.map((u, i) => \`
+                <div class=\"leaderboard-item\" style=\"display:flex; justify-content:space-between; padding:0.5rem 0; border-bottom:1px solid rgba(255,255,255,0.05)\">
+                    <span>\${i+1}. \${u.username}</span>
+                    <span style=\"font-weight:800; color:var(--color-primary)\">\${Math.floor(u.credits)}</span>
                 </div>
-            `).join('');
+            \`).join('');
         }
 
         function claimDaily() {
             const now = Date.now();
-            if(now - user.lastDaily < 86400000) return notify("Reviens dans 24h !", "err");
+            if(now - user.lastDaily < 86400000) return notify(\"Reviens dans 24h !\", \"err\");
             user.credits += 50;
             user.lastDaily = now;
-            save();
-            updateUI();
-            notify("+50 crédits quotidiens !", "ok");
+            save(); updateUI();
+            notify(\"+50 crédits quotidiens !\", \"ok\");
         }
 
         function buyTicket() {
             const t = TICKETS.find(x => x.id === activeTicketId);
-            if(user.credits < t.cost) return notify("Crédits insuffisants", "err");
+            if(user.credits < t.cost) return notify(\"Crédits insuffisants\", \"err\");
             user.credits -= t.cost;
             document.getElementById('buy-btn').disabled = true;
+            document.getElementById('scratch-all-btn').disabled = false;
             generateResult(t);
             initCanvas();
             updateUI();
@@ -264,10 +244,8 @@
         function generateResult(t) {
             const grid = [];
             const win = Math.random() < 0.30;
-            let winnerIcon = null;
-
             if(win) {
-                winnerIcon = t.icons[Math.floor(Math.random() * t.icons.length)];
+                const winnerIcon = t.icons[Math.floor(Math.random() * t.icons.length)];
                 for(let i=0; i<3; i++) grid.push(winnerIcon);
                 while(grid.length < 9) {
                     let icon = t.icons[Math.floor(Math.random() * t.icons.length)];
@@ -280,51 +258,34 @@
                 }
             }
             grid.sort(() => Math.random() - 0.5);
-
             currentResult = { win, reward: t.reward, res: grid, t };
-            
-            document.getElementById('underlay').innerHTML = `
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; padding: 2rem; width: 100%; height: 100%;">
-                    ${grid.map(icon => `<div style="font-size: 2.2rem; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); aspect-ratio: 1/1;">${icon}</div>`).join('')}
+            document.getElementById('underlay').innerHTML = \`
+                <div style=\"display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; padding: 2rem; width: 100%; height: 100%;\">
+                    \${grid.map(icon => \`<div style=\"font-size: 2.2rem; background: rgba(255,255,255,0.05); display: flex; align-items: center; justify-content: center; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); aspect-ratio: 1/1;\">\${icon}</div>\`).join('')}
                 </div>
-            `;
+            \`;
         }
 
         function initCanvas() {
             const canvas = document.getElementById('canvas');
             const ctx = canvas.getContext('2d');
-            canvas.width = 400;
-            canvas.height = 300;
-            
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width; canvas.height = rect.height;
             ctx.fillStyle = '#b0b0b0';
             ctx.fillRect(0,0, canvas.width, canvas.height);
-            
-            ctx.strokeStyle = '#888';
-            ctx.lineWidth = 2;
-            for(let i=0; i<10; i++) {
-                ctx.beginPath();
-                ctx.moveTo(Math.random()*canvas.width, 0);
-                ctx.lineTo(Math.random()*canvas.width, canvas.height);
-                ctx.stroke();
-            }
-
-            ctx.fillStyle = '#444';
-            ctx.font = 'bold 24px sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText('GRATTEZ ICI', 200, 150);
+            ctx.strokeStyle = '#888'; ctx.lineWidth = 1;
+            for(let i=0; i<20; i++) { ctx.beginPath(); ctx.moveTo(Math.random()*canvas.width, 0); ctx.lineTo(Math.random()*canvas.width, canvas.height); ctx.stroke(); }
+            ctx.fillStyle = '#444'; ctx.font = 'bold 24px Satoshi'; ctx.textAlign = 'center'; ctx.fillText('GRATTEZ ICI', canvas.width/2, canvas.height/2);
 
             const scratch = (e) => {
                 if(!isScratching) return;
-                const rect = canvas.getBoundingClientRect();
-                const x = ((e.clientX || e.touches[0].clientX) - rect.left) * (canvas.width / rect.width);
-                const y = ((e.clientY || e.touches[0].clientY) - rect.top) * (canvas.height / rect.height);
+                const r = canvas.getBoundingClientRect();
+                const x = ((e.clientX || (e.touches && e.touches[0].clientX)) - r.left) * (canvas.width / r.width);
+                const y = ((e.clientY || (e.touches && e.touches[0].clientY)) - r.top) * (canvas.height / r.height);
                 ctx.globalCompositeOperation = 'destination-out';
-                ctx.beginPath();
-                ctx.arc(x, y, 25, 0, Math.PI*2);
-                ctx.fill();
+                ctx.beginPath(); ctx.arc(x, y, 30, 0, Math.PI*2); ctx.fill();
                 checkPercent();
             };
-
             canvas.onmousedown = canvas.ontouchstart = (e) => { isScratching = true; scratch(e); };
             window.onmousemove = window.ontouchmove = scratch;
             window.onmouseup = window.ontouchend = () => isScratching = false;
@@ -332,75 +293,51 @@
 
         function checkPercent() {
             const canvas = document.getElementById('canvas');
-            const ctx = canvas.getContext('2d');
-            const data = ctx.getImageData(0,0, canvas.width, canvas.height).data;
+            const data = canvas.getContext('2d').getImageData(0,0, canvas.width, canvas.height).data;
             let count = 0;
             for(let i=3; i<data.length; i+=4) if(data[i] === 0) count++;
             const pct = Math.floor((count / (canvas.width * canvas.height)) * 100);
-            document.getElementById('pct').innerText = `GRATTÉ : ${pct}%`;
-            if(pct > 70) finalize();
+            document.getElementById('pct').innerText = \`GRATTÉ : \${pct}%\`;
+            if(pct > 80) finalize();
+        }
+
+        function scratchAll() {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0,0, canvas.width, canvas.height);
+            finalize();
         }
 
         function finalize() {
             if(!currentResult) return;
-            const canvas = document.getElementById('canvas');
-            canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);
-
+            document.getElementById('scratch-all-btn').disabled = true;
             if(currentResult.win) {
                 user.credits += currentResult.reward;
                 user.totalWon += currentResult.reward;
-                notify(`GAGNÉ : ${currentResult.reward} CR. !`, "ok");
-            } else {
-                notify("PERDU...", "err");
-            }
-
+                confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#5ac8a8', '#f2c14e', '#ffffff'] });
+                notify(\`GAGNÉ : \${currentResult.reward} CR. !\`, \"ok\");
+            } else { notify(\"PERDU...\", \"err\"); }
             user.scratched++;
             user.xp += currentResult.t.xp;
-
-            const nextLevelXp = user.level * 100;
-            if(user.xp >= nextLevelXp) {
-                user.xp -= nextLevelXp;
-                user.level++;
-                notify(`NIVEAU SUPÉRIEUR : ${user.level} !`, "ok");
-            }
-
+            if(user.xp >= user.level * 100) { user.xp = 0; user.level++; notify(\"NIVEAU SUPÉRIEUR !\", \"ok\"); }
             currentResult = null;
             document.getElementById('new-btn').disabled = false;
-            save();
-            updateUI();
+            save(); updateUI();
         }
 
         function resetGame() {
             document.getElementById('buy-btn').disabled = false;
             document.getElementById('new-btn').disabled = true;
-            document.getElementById('pct').innerText = "GRATTÉ : 0%";
+            document.getElementById('scratch-all-btn').disabled = true;
+            document.getElementById('pct').innerText = \"GRATTÉ : 0%\";
             document.getElementById('underlay').innerHTML = '';
             const canvas = document.getElementById('canvas');
-            const ctx = canvas.getContext('2d');
-            ctx.clearRect(0,0,canvas.width,canvas.height);
-            document.getElementById('play-title').innerText = "Sélectionne un ticket";
-        }
-
-        function openAdmin() {
-            const p = prompt("Admin Pass:");
-            if(p === "135975") {
-                document.getElementById('admin-panel').classList.add('active-screen');
-                const tbody = document.getElementById('admin-tbody');
-                tbody.innerHTML = '';
-                Object.values(db.users).forEach(u => {
-                    tbody.innerHTML += `<tr><td>${u.username}</td><td>${u.password}</td><td>${u.credits}</td><td>${u.level}</td><td>${u.xp}</td></tr>`;
-                });
-            }
-        }
-
-        function closeAdmin() {
-            document.getElementById('admin-panel').classList.remove('active-screen');
+            canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);
         }
 
         function notify(msg, type) {
             const n = document.getElementById('notif');
-            n.innerText = msg;
-            n.className = `nt-${type} show`;
+            n.innerText = msg; n.className = \`nt-\${type} show\`;
             setTimeout(() => n.classList.remove('show'), 3000);
         }
     </script>
