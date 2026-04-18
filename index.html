@@ -3,10 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TicketStonks V11 - Ultimate Pro Arcade</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://api.fontshare.com/v2/css?f[]=satoshi@900,700,500,400&display=swap" rel="stylesheet">
+    <title>TicketStonks V12 - Ultimate Pro Arcade</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         :root {
@@ -23,259 +20,65 @@
             --radius: 1.5rem;
             --grad: linear-gradient(135deg, var(--primary), var(--secondary));
         }
-
         [data-theme="blue"] { --primary: #0084ff; --secondary: #00d2ff; }
         [data-theme="purple"] { --primary: #a855f7; --secondary: #ec4899; }
         [data-theme="gold"] { --primary: #fbbf24; --secondary: #f59e0b; }
         [data-theme="red"] { --primary: #ef4444; --secondary: #f87171; }
+        
+        * { box-sizing: border-box; user-select: none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        body { margin: 0; background: var(--bg); color: var(--text); font-family: 'Satoshi', sans-serif; min-height: 100vh; overflow-x: hidden; }
+        
+        .glass { background: var(--glass); backdrop-filter: var(--blur); border: 1px solid var(--glass-border); border-radius: var(--radius); }
+        .btn-grad { background: var(--grad); border: none; color: white; padding: 0.8rem 1.5rem; border-radius: 1rem; font-weight: 700; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-grad:hover { transform: translateY(-3px) scale(1.05); box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
 
-        * {
-            box-sizing: border-box;
-            user-select: none;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+        #auth-screen { position: fixed; inset: 0; z-index: 1000; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at top right, #1a1c22, #0b0c0e); }
+        .auth-card { padding: 3rem; text-align: center; width: 400px; }
+        .input-group { margin-bottom: 1.5rem; text-align: left; }
+        input { width: 100%; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); padding: 1rem; color: white; border-radius: 1rem; outline: none; }
+        input:focus { border-color: var(--primary); }
 
-        body {
-            font-family: 'Satoshi', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            margin: 0;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-        }
+        #game-ui { display: none; max-width: 1200px; margin: 0 auto; padding: 2rem; }
+        .navbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        .stats-bar { display: flex; gap: 1rem; }
+        .stat-card { padding: 0.5rem 1.5rem; display: flex; align-items: center; gap: 0.8rem; }
+        .money { color: var(--gold); font-weight: 900; }
+        .xp-bar-outer { width: 200px; height: 10px; background: rgba(255,255,255,0.1); border-radius: 5px; overflow: hidden; margin-top: 5px; }
+        .xp-bar-inner { height: 100%; background: var(--grad); width: 0%; transition: width 0.5s; }
 
-        .screen {
-            position: fixed;
-            inset: 0;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 10;
-            opacity: 0;
-            transform: scale(0.95);
-        }
+        .layout { display: grid; grid-template-columns: 350px 1fr; gap: 2rem; }
+        
+        .sidebar { display: flex; flex-direction: column; gap: 1rem; }
+        .ticket-item { padding: 1.5rem; cursor: pointer; border: 2px solid transparent; opacity: 0.6; }
+        .ticket-item.active { opacity: 1; border-color: var(--primary); background: rgba(255,255,255,0.08); }
+        .ticket-item.locked { filter: grayscale(1); cursor: not-allowed; }
+        .ticket-item h3 { margin: 0; font-size: 1.2rem; }
+        .price-tag { color: var(--gold); font-weight: 700; }
 
-        .screen.active {
-            display: flex;
-            opacity: 1;
-            transform: scale(1);
-        }
+        .play-zone { display: flex; flex-direction: column; align-items: center; gap: 2rem; padding: 2rem; position: relative; }
+        #canvas-wrap { position: relative; width: 400px; height: 400px; background: #222; border-radius: 2rem; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        canvas { position: absolute; inset: 0; cursor: crosshair; }
+        .content-layer { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 3rem; background: #fff; color: #000; }
+        
+        .extra-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 2rem; }
+        .shop-card { padding: 1.5rem; }
+        .wheel-wrap { position: relative; text-align: center; }
+        #wheel { width: 250px; height: 250px; border: 10px solid var(--glass-border); border-radius: 50%; position: relative; transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1); }
+        #wheel::after { content: '▼'; position: absolute; top: -20px; left: 50%; transform: translateX(-50%); color: var(--primary); font-size: 1.5rem; }
+        .wheel-segment { position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; clip-path: polygon(50% 50%, 0 0, 100% 0); }
 
-        .glass {
-            background: var(--glass);
-            backdrop-filter: var(--blur);
-            -webkit-backdrop-filter: var(--blur);
-            border: 1px solid var(--glass-border);
-            border-radius: var(--radius);
-        }
-
-        .btn-grad {
-            background: var(--grad);
-            border: none;
-            color: white;
-            padding: 0.8rem 1.5rem;
-            border-radius: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-
-        .btn-grad:hover {
-            transform: translateY(-2px);
-            filter: brightness(1.1);
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-        }
-
-        /* Login/Signup */
-        .auth-card {
-            width: 400px;
-            padding: 3rem;
-            text-align: center;
-        }
-
-        .input-group {
-            margin-bottom: 1.5rem;
-            text-align: left;
-        }
-
-        .input-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: var(--muted);
-            font-size: 0.9rem;
-        }
-
-        .input-group input {
-            width: 100%;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid var(--glass-border);
-            padding: 1rem;
-            border-radius: 0.8rem;
-            color: white;
-            outline: none;
-        }
-
-        /* Main Game Layout */
-        #game-screen {
-            display: none;
-            grid-template-columns: 300px 1fr 300px;
-            gap: 1.5rem;
-            padding: 1.5rem;
-            width: 100%;
-            height: 100%;
-        }
-
-        .sidebar, .ticket-list {
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-            padding: 1.5rem;
-            overflow-y: auto;
-        }
-
-        /* Canvas Area */
-        .main-stage {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .canvas-container {
-            flex: 1;
-            position: relative;
-            background: #fffbe6;
-            border-radius: 2rem;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: inset 0 0 50px rgba(0,0,0,0.1);
-        }
-
-        canvas {
-            cursor: crosshair;
-            touch-action: none;
-        }
-
-        #scratch-result {
-            position: absolute;
-            font-size: 4rem;
-            font-weight: 900;
-            color: #2d3436;
-            text-align: center;
-            pointer-events: none;
-            z-index: 1;
-        }
-
-        /* Ticket Cards */
-        .ticket-item {
-            padding: 1.5rem;
-            margin-bottom: 0.5rem;
-            cursor: pointer;
-            opacity: 0.6;
-        }
-
-        .ticket-item.active {
-            opacity: 1;
-            border-color: var(--primary);
-            background: rgba(90, 200, 168, 0.1);
-        }
-
-        .ticket-item.locked {
-            filter: grayscale(1);
-            cursor: not-allowed;
-            background: rgba(255, 255, 255, 0.02);
-        }
-
-        /* Roulette */
-        .wheel-container {
-            position: relative;
-            width: 300px;
-            height: 300px;
-            margin: 2rem auto;
-        }
-
-        #wheel {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            border: 8px solid var(--glass-border);
-            transition: transform 5s cubic-bezier(0.15, 0, 0.15, 1);
-            background: conic-gradient(
-                #ff6b6b 0 45deg, #4ecdc4 45deg 90deg, 
-                #45b7d1 90deg 135deg, #96ceb4 135deg 180deg,
-                #ffeead 180deg 225deg, #ffcc5c 225deg 270deg,
-                #ff6f69 270deg 315deg, #ff8b94 315deg 360deg
-            );
-        }
-
-        .wheel-pointer {
-            position: absolute;
-            top: -20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 40px;
-            height: 40px;
-            background: var(--primary);
-            clip-path: polygon(50% 100%, 0 0, 100% 0);
-            z-index: 5;
-        }
-
-        /* Admin Panel */
-        #admin-panel {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 80%;
-            height: 80%;
-            z-index: 100;
-            padding: 2rem;
-            display: none;
-            flex-direction: column;
-        }
-
-        .admin-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 1rem;
-        }
-
-        .admin-table th, .admin-table td {
-            padding: 1rem;
-            text-align: left;
-            border-bottom: 1px solid var(--glass-border);
-        }
-
-        /* Modal Base */
-        .modal {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(10px);
-            z-index: 50;
-            display: none;
-            align-items: center;
-            justify-content: center;
-        }
+        #admin-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; align-items: center; justify-content: center; padding: 2rem; }
+        .admin-content { background: #1a1c22; width: 100%; max-width: 800px; border-radius: 1rem; padding: 2rem; }
+        table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        th, td { padding: 1rem; text-align: left; border-bottom: 1px solid #333; }
     </style>
 </head>
-<body>
+<body onclick="if(event.ctrlKey && event.shiftKey && event.key === 'A') Admin.prompt()">
 
-    <!-- Auth Screen -->
-    <div id="auth-screen" class="screen active">
-        <div class="auth-card glass">
-            <h1 style="margin-top:0">TicketStonks</h1>
-            <p style="color:var(--muted)">Connectez-vous pour jouer</p>
+    <div id="auth-screen">
+        <div class="glass auth-card">
+            <h1 style="background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">TICKETSTONKS</h1>
+            <p style="color: var(--muted); margin-bottom: 2rem;">V12 - Ultimate Pro Arcade</p>
             <div class="input-group">
                 <label>Nom d'utilisateur</label>
                 <input type="text" id="username" placeholder="Pseudo...">
@@ -284,452 +87,232 @@
                 <label>Mot de passe</label>
                 <input type="password" id="password" placeholder="••••••••">
             </div>
-            <div style="display:flex; gap:1rem; margin-top:1rem;">
-                <button class="btn-grad" style="flex:1" onclick="auth.login()">Connexion</button>
-                <button class="btn-grad" style="flex:1; --primary:#444; --secondary:#222;" onclick="auth.signup()">S'inscrire</button>
+            <button class="btn-grad" style="width: 100%;" onclick="Auth.action()">DÉMARRER</button>
+        </div>
+    </div>
+
+    <div id="game-ui">
+        <nav class="navbar">
+            <h2 id="user-display">Bonjour, User</h2>
+            <div class="stats-bar">
+                <div class="glass stat-card">
+                    <span>🪙</span>
+                    <span id="money-display" class="money">100</span>
+                </div>
+                <div class="glass stat-card">
+                    <div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
+                            <span>Niv. <b id="lvl-display">1</b></span>
+                            <span id="xp-text">0 / 100</span>
+                        </div>
+                        <div class="xp-bar-outer">
+                            <div id="xp-bar" class="xp-bar-inner"></div>
+                        </div>
+                    </div>
+                </div>
+                <button class="glass" style="padding: 0 1rem; cursor: pointer; border: none; color: white;" onclick="Auth.logout()">🚪</button>
+            </div>
+        </nav>
+
+        <div class="layout">
+            <div class="sidebar" id="ticket-list"></div>
+            <div class="glass play-zone">
+                <div id="canvas-wrap">
+                    <div id="content-bg" class="content-layer">
+                        <div id="grid-symbols" style="display: grid; gap: 10px;"></div>
+                    </div>
+                    <canvas id="scratch-layer"></canvas>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn-grad" id="buy-btn" onclick="Game.buy()">ACHETER TICKET</button>
+                    <button class="glass" style="padding: 0 2rem; color: white; border-radius: 1rem; cursor: pointer;" onclick="Game.scratchAll()">TOUT GRATTER</button>
+                </div>
+                <div id="rule-box" style="text-align: center; color: var(--muted); font-size: 0.9rem;"></div>
+            </div>
+        </div>
+
+        <div class="extra-tabs">
+            <div class="glass shop-card">
+                <h3>BOUTIQUE</h3>
+                <button class="glass btn-grad" style="width: 100%; margin-top: 1rem;" onclick="Game.upgradeBrush()">
+                    Pinceau plus large (+5px) <br> <span id="brush-cost">50</span> cr.
+                </button>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;">
+                    <button class="glass" style="color:white; padding: 10px;" onclick="Game.buyTheme('blue', 500)">Theme Bleu (500)</button>
+                    <button class="glass" style="color:white; padding: 10px;" onclick="Game.buyTheme('purple', 1000)">Theme Purple (1k)</button>
+                </div>
+            </div>
+            <div class="glass wheel-wrap">
+                <h3>ROUE DE LA FORTUNE</h3>
+                <div id="wheel">
+                    <div class="wheel-segment" style="transform: rotate(0deg); background: #5ac8a8;">1k</div>
+                    <div class="wheel-segment" style="transform: rotate(45deg); background: #66a3ff;">500</div>
+                    <div class="wheel-segment" style="transform: rotate(90deg); background: #f2c14e;">5k</div>
+                    <div class="wheel-segment" style="transform: rotate(135deg); background: #ff6b7a;">250</div>
+                    <div class="wheel-segment" style="transform: rotate(180deg); background: #5ac8a8;">10k</div>
+                    <div class="wheel-segment" style="transform: rotate(225deg); background: #66a3ff;">100</div>
+                    <div class="wheel-segment" style="transform: rotate(270deg); background: #f2c14e;">2.5k</div>
+                    <div class="wheel-segment" style="transform: rotate(315deg); background: #ff6b7a;">50</div>
+                </div>
+                <button class="btn-grad" id="spin-btn" style="margin-top: 2rem;" onclick="Game.spin()">TOURNER (Gratuit 24h)</button>
             </div>
         </div>
     </div>
 
-    <!-- Game Screen -->
-    <div id="game-screen">
-        <div class="sidebar glass">
-            <div style="text-align:center; padding:1rem;">
-                <h2 id="display-user">USER</h2>
-                <div style="background:rgba(255,255,255,0.05); height:8px; border-radius:4px; overflow:hidden;">
-                    <div id="xp-bar" style="width:0%; height:100%; background:var(--grad);"></div>
-                </div>
-                <p style="font-size:0.8rem; color:var(--muted); margin-top:0.5rem;">Niveau <span id="display-lvl">1</span></p>
+    <div id="admin-modal">
+        <div class="admin-content">
+            <div style="display: flex; justify-content: space-between;">
+                <h2>PANEL ADMIN</h2>
+                <button onclick="document.getElementById('admin-modal').style.display='none'" style="color:white; font-size:2rem; background:none; border:none;">×</button>
             </div>
-            
-            <button class="btn-grad" onclick="ui.toggleModal('boutique')">🛍️ BOUTIQUE</button>
-            <button class="btn-grad" onclick="ui.toggleModal('roulette')">🎡 ROULETTE</button>
-            <button class="btn-grad" style="--primary:#ff6b7a; --secondary:#ee5253" onclick="auth.logout()">🚪 QUITTER</button>
-            <button class="btn-grad" style="--primary:#444; --secondary:#333; margin-top:auto" onclick="admin.checkAccess()">⚙️ ADMIN</button>
-        </div>
-
-        <div class="main-stage">
-            <div class="glass" style="display:flex; justify-content:space-between; padding:1.2rem 2rem; align-items:center;">
-                <div style="display:flex; align-items:center; gap:0.8rem;">
-                    <span style="font-size:1.5rem;">💰</span>
-                    <span id="display-money" style="font-size:1.5rem; font-weight:900;">100</span>
-                </div>
-                <h3 id="display-ticket-name" style="margin:0">Ticket Départ</h3>
-                <div id="scratch-percent" style="color:var(--muted)">0%</div>
-            </div>
-
-            <div class="canvas-container">
-                <div id="scratch-result">?</div>
-                <canvas id="canvas"></canvas>
-            </div>
-
-            <div style="display:flex; gap:1rem;">
-                <button id="buy-btn" class="btn-grad" style="flex:2; height:80px; font-size:1.5rem;" onclick="game.buyTicket()">ACHETER</button>
-                <button class="btn-grad" style="flex:1; --primary:#444; --secondary:#222;" onclick="game.scratchAll()">TOUT GRATTER</button>
-            </div>
-        </div>
-
-        <div class="ticket-list glass">
-            <h4 style="margin-top:0">Tickets (Niv 1-100)</h4>
-            <div id="tickets-container"></div>
-        </div>
-    </div>
-
-    <!-- Modals -->
-    <div id="modal-boutique" class="modal">
-        <div class="glass" style="width:600px; padding:2.5rem; position:relative;">
-            <button onclick="ui.closeModals()" style="position:absolute; top:1rem; right:1rem; background:none; border:none; color:white; font-size:1.5rem; cursor:pointer;">&times;</button>
-            <h2>Boutique de Skins</h2>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
-                <div class="glass" style="padding:1rem;">
-                    <h4>Thèmes</h4>
-                    <button class="btn-grad" style="width:100%; margin-bottom:0.5rem;" onclick="game.setTheme('default')">Emeraude (Base)</button>
-                    <button class="btn-grad" style="width:100%; margin-bottom:0.5rem; --primary:#0084ff; --secondary:#00d2ff;" onclick="game.setTheme('blue')">Ocean (5000 cr.)</button>
-                    <button class="btn-grad" style="width:100%; margin-bottom:0.5rem; --primary:#a855f7; --secondary:#ec4899;" onclick="game.setTheme('purple')">Neon (10000 cr.)</button>
-                    <button class="btn-grad" style="width:100%; margin-bottom:0.5rem; --primary:#fbbf24; --secondary:#f59e0b;" onclick="game.setTheme('gold')">Royal (25000 cr.)</button>
-                </div>
-                <div class="glass" style="padding:1rem;">
-                    <h4>Améliorations</h4>
-                    <button class="btn-grad" style="width:100%;" onclick="game.upgradeBrush()">Trait plus large (<span id="brush-cost">1000</span> cr.)</button>
-                    <p style="font-size:0.8rem; color:var(--muted); margin-top:0.5rem;">Taille actuelle: <span id="brush-size">20</span></p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="modal-roulette" class="modal">
-        <div class="glass" style="width:400px; padding:2.5rem; text-align:center; position:relative;">
-            <button onclick="ui.closeModals()" style="position:absolute; top:1rem; right:1rem; background:none; border:none; color:white; font-size:1.5rem; cursor:pointer;">&times;</button>
-            <h2>Roulette Quotidienne</h2>
-            <div class="wheel-container">
-                <div class="wheel-pointer"></div>
-                <div id="wheel"></div>
-            </div>
-            <p id="roulette-timer" style="color:var(--muted); margin-bottom:1rem;"></p>
-            <button id="spin-btn" class="btn-grad" style="width:100%" onclick="game.spinWheel()">LANCER</button>
-        </div>
-    </div>
-
-    <div id="admin-panel" class="glass">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h2>Panel Admin</h2>
-            <button class="btn-grad" style="--primary:#ff6b7a" onclick="admin.close()">Fermer</button>
-        </div>
-        <div style="flex:1; overflow-y:auto; margin-top:1rem;">
-            <table class="admin-table">
-                <thead>
-                    <tr>
-                        <th>User</th>
-                        <th>Mots de passe</th>
-                        <th>Crédits</th>
-                        <th>XP</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="admin-users-list"></tbody>
+            <table>
+                <thead><tr><th>User</th><th>Pass</th><th>Money</th><th>XP</th><th>Action</th></tr></thead>
+                <tbody id="admin-table-body"></tbody>
             </table>
         </div>
     </div>
 
     <script>
-        // Data Structure
-        const DB_KEY = 'ts_v11_db';
-        let db = JSON.parse(localStorage.getItem(DB_KEY)) || {
-            users: [],
-            session: null
+        const db = {
+            get users() { return JSON.parse(localStorage.getItem('ts_users') || '[]'); },
+            set users(v) { localStorage.setItem('ts_users', JSON.stringify(v)); },
+            get session() { return localStorage.getItem('ts_session'); },
+            set session(v) { localStorage.setItem('ts_session', v || ''); }
         };
 
-        function saveDB() {
-            localStorage.setItem(DB_KEY, JSON.stringify(db));
-        }
+        let user = null, activeIdx = 0, isScratched = false, canvas, ctx;
 
-        // State
-        let currentUser = null;
-        let activeTicket = 0;
-        let isScratched = false;
-        let brushSize = 25;
-        let scratchThreshold = 85;
+        const tickets = [
+            { name: "Ticket Simple", cost: 10, lvl: 1, grid: [1, 3], prize: 50, rule: "3 identiques = Gain" },
+            { name: "Grille 3x3", cost: 25, lvl: 3, grid: [3, 3], prize: 150, rule: "3+ identiques = Gain" },
+            { name: "Carte Trésor", cost: 50, lvl: 5, grid: [4, 4], prize: 500, rule: "Trouve les coffres" },
+            { name: "Mega Combo", cost: 100, lvl: 8, grid: [5, 3], prize: 2000, rule: "Lignes gagnantes" }
+        ];
 
-        const ticketsData = Array.from({length: 20}, (_, i) => ({
-            id: i,
-            name: `Ticket Niv.${i * 5 + 1}`,
-            cost: Math.floor(10 * Math.pow(2.2, i)),
-            minLvl: i * 5,
-            winProb: 0.5
-        }));
+        const symbols = ['💎', '🍋', '🍒', '🔔', '💰', '🍀', '7️⃣'];
 
-        // Canvas Logic
-        const canvas = document.getElementById('canvas');
-        const ctx = canvas.getContext('2d');
-        let isDrawing = false;
+        const Auth = {
+            action() {
+                const u = document.getElementById('username').value.trim();
+                const p = document.getElementById('password').value;
+                if(!u || !p) return;
+                let list = db.users;
+                let f = list.find(x => x.name === u);
+                if(f) {
+                    if(f.pass !== p) return alert("MDP incorrect");
+                    this.start(f);
+                } else {
+                    f = { name: u, pass: p, money: 100, xp: 0, lvl: 1, brush: 20, themes: [], activeTheme: '' };
+                    list.push(f); db.users = list; this.start(f);
+                }
+            },
+            start(f) {
+                user = f; db.session = f.name;
+                document.getElementById('auth-screen').style.display = 'none';
+                document.getElementById('game-ui').style.display = 'block';
+                UI.update(); UI.renderTickets(); initCanvas();
+            },
+            logout() { db.session = ''; location.reload(); }
+        };
+
+        const UI = {
+            update() {
+                document.getElementById('money-display').innerText = user.money;
+                document.getElementById('lvl-display').innerText = user.lvl;
+                document.getElementById('xp-bar').style.width = (user.xp / (user.lvl * 100)) * 100 + '%';
+                document.getElementById('brush-cost').innerText = user.brush * 5;
+                document.body.setAttribute('data-theme', user.activeTheme);
+            },
+            renderTickets() {
+                const l = document.getElementById('ticket-list'); l.innerHTML = '';
+                tickets.forEach((t, i) => {
+                    const lock = user.lvl < t.lvl;
+                    const d = document.createElement('div');
+                    d.className = `glass ticket-item ${i === activeIdx ? 'active' : ''} ${lock ? 'locked' : ''}`;
+                    d.innerHTML = `<h3>${t.name}</h3><p>${t.cost} cr.</p>`;
+                    if(!lock) d.onclick = () => { activeIdx = i; UI.renderTickets(); initCanvas(); };
+                    l.appendChild(d);
+                });
+                document.getElementById('rule-box').innerText = tickets[activeIdx].rule;
+            }
+        };
 
         function initCanvas() {
-            canvas.width = 500;
-            canvas.height = 500;
-            ctx.fillStyle = '#bdc3c7';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.globalCompositeOperation = 'destination-out';
+            canvas = document.getElementById('scratch-layer'); ctx = canvas.getContext('2d');
+            canvas.width = 400; canvas.height = 400;
+            ctx.fillStyle = '#b5b5b5'; ctx.fillRect(0,0,400,400);
+            const t = tickets[activeIdx];
+            const g = document.getElementById('grid-symbols');
+            g.style.gridTemplateColumns = `repeat(${t.grid[0]}, 1fr)`;
+            g.innerHTML = '';
+            for(let i=0; i < t.grid[0]*t.grid[1]; i++) {
+                g.innerHTML += `<div style="padding:10px; background:#eee; border-radius:5px;">${symbols[Math.floor(Math.random()*symbols.length)]}</div>`;
+            }
             isScratched = false;
-            document.getElementById('scratch-result').style.opacity = '0';
-            document.getElementById('scratch-percent').innerText = '0%';
+            let draw = false;
+            const scratch = (e) => {
+                if(!draw || isScratched) return;
+                const r = canvas.getBoundingClientRect();
+                const x = (e.clientX || e.touches[0].clientX) - r.left;
+                const y = (e.clientY || e.touches[0].clientY) - r.top;
+                ctx.globalCompositeOperation = 'destination-out';
+                ctx.beginPath(); ctx.arc(x, y, user.brush, 0, Math.PI*2); ctx.fill();
+                check();
+            };
+            canvas.onmousedown = () => draw = true; canvas.onmouseup = () => draw = false; canvas.onmousemove = scratch;
         }
 
-        canvas.addEventListener('mousedown', () => isDrawing = true);
-        canvas.addEventListener('mousemove', scratch);
-        window.addEventListener('mouseup', () => isDrawing = false);
-
-        function scratch(e) {
-            if (!isDrawing || isScratched) return;
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-
-            ctx.beginPath();
-            ctx.arc(x, y, currentUser.brush || 25, 0, Math.PI * 2);
-            ctx.fill();
-            checkScratchProgress();
+        function check() {
+            const d = ctx.getImageData(0,0,400,400).data;
+            let c = 0; for(let i=3; i<d.length; i+=4) if(d[i] === 0) c++;
+            if(c > 400*400*0.5 && !isScratched) reveal();
         }
 
-        function checkScratchProgress() {
-            const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
-            let cleared = 0;
-            for (let i = 3; i < pixels.length; i += 4) {
-                if (pixels[i] === 0) cleared++;
-            }
-            const percent = Math.round((cleared / (canvas.width * canvas.height)) * 100);
-            document.getElementById('scratch-percent').innerText = percent + '%';
-
-            if (percent > scratchThreshold && !isScratched) {
-                revealResult();
-            }
+        function reveal() {
+            isScratched = true; ctx.clearRect(0,0,400,400);
+            const sList = Array.from(document.getElementById('grid-symbols').children).map(x => x.innerText);
+            const cnt = {}; sList.forEach(s => cnt[s] = (cnt[s] || 0) + 1);
+            let win = false; for(let s in cnt) if(cnt[s] >= 3) win = true;
+            if(win) { user.money += tickets[activeIdx].prize; confetti(); alert("Gagné !"); }
+            user.xp += 10; if(user.xp >= user.lvl*100) { user.xp=0; user.lvl++; alert("Level Up!"); }
+            UI.update(); save();
         }
 
-        function revealResult() {
-            isScratched = true;
-            const win = Math.random() < 0.5;
-            const resEl = document.getElementById('scratch-result');
-            const ticket = ticketsData[activeTicket];
-            
-            if (win) {
-                const prize = ticket.cost * 3;
-                resEl.innerText = prize + ' cr.';
-                resEl.style.color = '#27ae60';
-                currentUser.money += prize;
-                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-            } else {
-                resEl.innerText = 'PERDU';
-                resEl.style.color = '#e74c3c';
-            }
-            
-            resEl.style.opacity = '1';
-            currentUser.xp += 10;
-            checkLevel();
-            ui.update();
-            saveDB();
-        }
+        function save() { let l = db.users; l[l.findIndex(x => x.name === user.name)] = user; db.users = l; }
 
-        function checkLevel() {
-            const nextLvlXp = currentUser.level * 100;
-            if (currentUser.xp >= nextLvlXp) {
-                currentUser.xp -= nextLvlXp;
-                currentUser.level++;
-                alert(`BRAVO ! Vous êtes maintenant niveau ${currentUser.level}`);
-            }
-        }
-
-        // Auth Logic
-        const auth = {
-            login() {
-                const user = db.users.find(u => u.name === document.getElementById('username').value && u.pass === document.getElementById('password').value);
-                if (user) {
-                    db.session = user.name;
-                    this.startSession(user);
-                } else {
-                    alert('Identifiants incorrects');
-                }
-            },
-            signup() {
-                const name = document.getElementById('username').value;
-                const pass = document.getElementById('password').value;
-                if (!name || !pass) return alert('Remplis tout !');
-                if (db.users.find(u => u.name === name)) return alert('Pseudo déjà pris');
-                
-                const newUser = {
-                    name, pass,
-                    money: 1000,
-                    xp: 0,
-                    level: 1,
-                    brush: 25,
-                    theme: 'default',
-                    lastSpin: 0,
-                    ownedThemes: ['default']
-                };
-                db.users.push(newUser);
-                db.session = name;
-                saveDB();
-                this.startSession(newUser);
-            },
-            startSession(user) {
-                currentUser = user;
-                document.getElementById('auth-screen').classList.remove('active');
-                document.getElementById('game-screen').style.display = 'grid';
-                ui.initTickets();
-                ui.update();
-                initCanvas();
-                document.body.setAttribute('data-theme', user.theme || 'default');
-            },
-            logout() {
-                db.session = null;
-                saveDB();
-                location.reload();
-            }
-        };
-
-        // UI Logic
-        const ui = {
-            update() {
-                if (!currentUser) return;
-                document.getElementById('display-user').innerText = currentUser.name;
-                document.getElementById('display-money').innerText = Math.floor(currentUser.money);
-                document.getElementById('display-lvl').innerText = currentUser.level;
-                
-                const xpNeeded = currentUser.level * 100;
-                const xpPerc = (currentUser.xp / xpNeeded) * 100;
-                document.getElementById('xp-bar').style.width = xpPerc + '%';
-                
-                document.getElementById('display-ticket-name').innerText = ticketsData[activeTicket].name;
-                document.getElementById('brush-size').innerText = currentUser.brush || 25;
-                document.getElementById('brush-cost').innerText = (currentUser.brush || 25) * 100;
-
-                this.initTickets();
-                this.checkSpin();
-            },
-            initTickets() {
-                const container = document.getElementById('tickets-container');
-                container.innerHTML = '';
-                ticketsData.forEach((t, i) => {
-                    const isLocked = currentUser.level < t.minLvl;
-                    const div = document.createElement('div');
-                    div.className = `ticket-item glass ${i === activeTicket ? 'active' : ''} ${isLocked ? 'locked' : ''}`;
-                    div.innerHTML = `
-                        <div style="font-weight:900">${t.name}</div>
-                        <div style="font-size:0.8rem; color:var(--muted)">${isLocked ? '🔒 Niveau '+t.minLvl : t.cost + ' cr.'}</div>
-                    `;
-                    if (!isLocked) div.onclick = () => { activeTicket = i; ui.update(); initCanvas(); };
-                    container.appendChild(div);
-                });
-            },
-            toggleModal(id) {
-                document.getElementById('modal-'+id).style.display = 'flex';
-            },
-            closeModals() {
-                document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
-            },
-            checkSpin() {
-                const now = Date.now();
-                const last = currentUser.lastSpin || 0;
-                const diff = now - last;
-                const day = 24 * 60 * 60 * 1000;
-                
-                const btn = document.getElementById('spin-btn');
-                if (diff < day) {
-                    btn.disabled = true;
-                    btn.style.opacity = '0.5';
-                    const remain = day - diff;
-                    const h = Math.floor(remain / 3600000);
-                    const m = Math.floor((remain % 3600000) / 60000);
-                    document.getElementById('roulette-timer').innerText = `Reviens dans ${h}h ${m}m`;
-                } else {
-                    btn.disabled = false;
-                    btn.style.opacity = '1';
-                    document.getElementById('roulette-timer').innerText = 'Disponible !';
-                }
-            }
-        };
-
-        // Game Actions
-        const game = {
-            buyTicket() {
-                const ticket = ticketsData[activeTicket];
-                if (currentUser.money >= ticket.cost) {
-                    currentUser.money -= ticket.cost;
-                    initCanvas();
-                    ui.update();
-                    saveDB();
-                } else {
-                    alert('Pas assez de crédits !');
-                }
-            },
-            scratchAll() {
-                if (isScratched) return;
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                revealResult();
-            },
-            setTheme(t) {
-                const costs = { blue: 5000, purple: 10000, gold: 25000, default: 0 };
-                if (currentUser.ownedThemes.includes(t)) {
-                    currentUser.theme = t;
-                    document.body.setAttribute('data-theme', t);
-                } else {
-                    if (currentUser.money >= costs[t]) {
-                        currentUser.money -= costs[t];
-                        currentUser.ownedThemes.push(t);
-                        currentUser.theme = t;
-                        document.body.setAttribute('data-theme', t);
-                    } else {
-                        alert('Pas assez d\'argent !');
-                    }
-                }
-                saveDB();
-                ui.update();
-            },
-            upgradeBrush() {
-                const cost = (currentUser.brush || 25) * 100;
-                if (currentUser.money >= cost) {
-                    currentUser.money -= cost;
-                    currentUser.brush = (currentUser.brush || 25) + 5;
-                    saveDB();
-                    ui.update();
-                } else {
-                    alert('Pas assez d\'argent !');
-                }
-            },
-            spinWheel() {
-                const btn = document.getElementById('spin-btn');
-                btn.disabled = true;
-                const wheel = document.getElementById('wheel');
-                const deg = Math.floor(3600 + Math.random() * 360);
-                wheel.style.transform = `rotate(${deg}deg)`;
-                
+        const Game = {
+            buy() { if(user.money >= tickets[activeIdx].cost) { user.money -= tickets[activeIdx].cost; initCanvas(); UI.update(); save(); } },
+            scratchAll() { if(!isScratched) reveal(); },
+            upgradeBrush() { const c = user.brush*5; if(user.money >= c) { user.money -= c; user.brush += 5; UI.update(); save(); } },
+            spin() {
+                const w = document.getElementById('wheel'); const r = 1800 + Math.random()*1800;
+                w.style.transform = `rotate(${r}deg)`;
                 setTimeout(() => {
-                    const actualDeg = deg % 360;
-                    // Rewards mapping based on sections
-                    let prize = 0;
-                    if (actualDeg >= 0 && actualDeg < 45) prize = 1000;
-                    else if (actualDeg >= 45 && actualDeg < 90) prize = 500;
-                    else if (actualDeg >= 90 && actualDeg < 135) prize = 5000;
-                    else if (actualDeg >= 135 && actualDeg < 180) prize = 100;
-                    else if (actualDeg >= 180 && actualDeg < 225) prize = 2500;
-                    else if (actualDeg >= 225 && actualDeg < 270) prize = 10000;
-                    else if (actualDeg >= 270 && actualDeg < 315) prize = 200;
-                    else prize = 50;
-
-                    alert(`Gagné: ${prize} crédits !`);
-                    currentUser.money += prize;
-                    currentUser.lastSpin = Date.now();
-                    saveDB();
-                    ui.update();
-                }, 5000);
+                    const prizes = [1000, 500, 5000, 250, 10000, 100, 2500, 50];
+                    const p = prizes[Math.floor(((360 - (r % 360)) % 360) / 45)];
+                    user.money += p; UI.update(); save(); alert(`Roue: +${p}`);
+                }, 4000);
+            },
+            buyTheme(t, c) {
+                if(user.themes.includes(t)) user.activeTheme = t;
+                else if(user.money >= c) { user.money -= c; user.themes.push(t); user.activeTheme = t; }
+                UI.update(); save();
             }
         };
 
-        // Admin Logic
-        const admin = {
-            checkAccess() {
-                const code = prompt('Code secret admin ?');
-                if (code === 'admin123') {
-                    this.open();
-                }
-            },
-            open() {
-                document.getElementById('admin-panel').style.display = 'flex';
-                const list = document.getElementById('admin-users-list');
-                list.innerHTML = '';
+        const Admin = {
+            prompt() { if(prompt("Code?") === "admin123") { document.getElementById('admin-modal').style.display='flex'; this.render(); } },
+            render() {
+                const b = document.getElementById('admin-table-body'); b.innerHTML = '';
                 db.users.forEach((u, i) => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${u.name}</td>
-                        <td>${u.pass}</td>
-                        <td><input type="number" value="${u.money}" onchange="admin.update(${i}, 'money', this.value)"></td>
-                        <td><input type="number" value="${u.xp}" onchange="admin.update(${i}, 'xp', this.value)"></td>
-                        <td><button onclick="admin.delete(${i})" style="color:red">Suppr</button></td>
-                    `;
-                    list.appendChild(tr);
+                    b.innerHTML += `<tr><td>${u.name}</td><td>${u.pass}</td><td><input type="number" value="${u.money}" onchange="Admin.mod(${i},'money',this.value)"></td><td><input type="number" value="${u.xp}" onchange="Admin.mod(${i},'xp',this.value)"></td><td><button onclick="Admin.del(${i})">DEL</button></td></tr>`;
                 });
             },
-            update(idx, key, val) {
-                db.users[idx][key] = parseFloat(val);
-                saveDB();
-                if (currentUser && db.users[idx].name === currentUser.name) currentUser = db.users[idx];
-                ui.update();
-            },
-            delete(idx) {
-                if (confirm('Supprimer cet utilisateur ?')) {
-                    db.users.splice(idx, 1);
-                    saveDB();
-                    this.open();
-                }
-            },
-            close() {
-                document.getElementById('admin-panel').style.display = 'none';
-            }
+            mod(i, k, v) { let l = db.users; l[i][k] = parseInt(v); db.users = l; if(user.name === l[i].name) user = l[i]; UI.update(); },
+            del(i) { let l = db.users; l.splice(i, 1); db.users = l; this.render(); }
         };
 
-        // Init
-        if (db.session) {
-            const user = db.users.find(u => u.name === db.session);
-            if (user) auth.startSession(user);
-        }
+        if(db.session) { const f = db.users.find(x => x.name === db.session); if(f) Auth.start(f); }
     </script>
 </body>
 </html>
