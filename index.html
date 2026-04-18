@@ -5,328 +5,443 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TicketStonks V6 - Pro</title>
     <style>
-        :root { --bg: #0a0a0b; --bg-card: #141417; --accent: #f5c542; --text: #ffffff; --sub: #a1a1aa; --border: #27272a; --green: #22c55e; --red: #ef4444; }
+        :root {
+            --bg: #0a0a0b;
+            --bg-card: #141417;
+            --accent: #f5c542;
+            --text: #ffffff;
+            --sub: #a1a1aa;
+            --border: #27272a;
+            --green: #22c55e;
+            --red: #ef4444;
+        }
         * { margin:0; padding:0; box-sizing:border-box; user-select:none; }
-        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; overflow: hidden; }
-        #loading, #auth-screen, #game-screen, #admin-panel { display: none; height: 100vh; flex-direction: column; align-items: center; justify-content: center; position: fixed; width: 100%; top:0; left:0; }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; overflow: hidden; height: 100vh; }
+        
+        #loading, #auth-screen, #game-screen, #admin-panel { 
+            display: none; height: 100vh; flex-direction: column; align-items: center; justify-content: center; 
+            position: fixed; width: 100%; top:0; left:0; 
+        }
         .active { display: flex !important; }
+
+        /* Loader */
         #loading { background: var(--bg); z-index: 1000; }
-        .loader { width: 48px; height: 48px; border: 5px solid #FFF; border-bottom-color: var(--accent); border-radius: 50%; animation: rotation 1s linear infinite; }
+        .loader { 
+            width: 48px; height: 48px; border: 5px solid #FFF; border-bottom-color: var(--accent); 
+            border-radius: 50%; animation: rotation 1s linear infinite; 
+        }
         @keyframes rotation { 0% { transform: rotate(0deg) } 100% { transform: rotate(360deg) } }
+
+        /* Auth */
         #auth-screen { background: radial-gradient(circle at center, #1e1e24 0%, #0a0a0b 100%); }
-        .auth-card { background: var(--bg-card); padding: 2.5rem; border-radius: 20px; border: 1px solid var(--border); width: 350px; text-align: center; }
-        input { width: 100%; padding: 12px; margin-bottom: 10px; background: #000; border: 1px solid var(--border); border-radius: 8px; color: white; outline: none; }
-        button { width: 100%; padding: 12px; border-radius: 8px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .auth-card { 
+            background: var(--bg-card); padding: 2.5rem; border-radius: 20px; border: 1px solid var(--border); 
+            width: 380px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        input { 
+            width: 100%; padding: 14px; margin-bottom: 12px; background: #000; border: 1px solid var(--border); 
+            border-radius: 10px; color: white; outline: none; transition: 0.3s;
+        }
+        input:focus { border-color: var(--accent); }
+        button { 
+            width: 100%; padding: 14px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; 
+        }
         .btn-primary { background: var(--accent); color: #000; }
-        .btn-link { background: transparent; color: var(--sub); font-size: 0.8rem; margin-top: 10px; }
-        .top-bar { position: fixed; top: 0; left: 0; right: 0; height: 70px; display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; background: rgba(10,10,11,0.8); border-bottom: 1px solid var(--border); z-index: 10; }
-        .xp-container { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-        .xp-bar { height: 10px; background: #27272a; border-radius: 5px; overflow: hidden; width: 300px; }
+        .btn-primary:hover { transform: scale(1.02); opacity: 0.9; }
+        .btn-link { background: transparent; color: var(--sub); font-size: 0.85rem; margin-top: 15px; }
+
+        /* HUD */
+        .top-bar { 
+            position: fixed; top: 0; left: 0; right: 0; height: 80px; display: flex; align-items: center; 
+            justify-content: space-between; padding: 0 2rem; background: rgba(10,10,11,0.9); 
+            border-bottom: 1px solid var(--border); z-index: 100; backdrop-filter: blur(10px);
+        }
+        .user-stats { display: flex; align-items: center; gap: 20px; }
+        .stat-item { display: flex; flex-direction: column; align-items: flex-start; }
+        .stat-label { font-size: 0.7rem; color: var(--sub); text-transform: uppercase; letter-spacing: 1px; }
+        .stat-value { font-weight: 800; font-size: 1.2rem; color: var(--accent); }
+
+        .xp-container { flex: 1; max-width: 400px; margin: 0 2rem; }
+        .xp-header { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 0.8rem; font-weight: bold; }
+        .xp-bar { height: 8px; background: #27272a; border-radius: 4px; overflow: hidden; }
         .xp-fill { height: 100%; background: linear-gradient(90deg, #f5c542, #fbbf24); width: 0%; transition: width 0.5s; }
-        .game-main { margin-top: 70px; display: flex; gap: 2rem; padding: 2rem; height: calc(100vh - 70px); }
-        .ticket-list { width: 300px; overflow-y: auto; padding-right: 10px; }
-        .ticket-card { background: var(--bg-card); border: 1px solid var(--border); padding: 1.2rem; border-radius: 12px; margin-bottom: 1rem; cursor: pointer; position: relative; overflow: hidden; transition: 0.2s; }
-        .ticket-card:hover { border-color: var(--accent); transform: translateY(-2px); }
-        .ticket-card.locked { opacity: 0.6; cursor: not-allowed; }
-        .lock-overlay { position: absolute; inset:0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: bold; color: var(--accent); }
-        .scratch-container { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2rem; }
-        #canvas-wrapper { position: relative; width: 450px; height: 250px; background: #27272a; border-radius: 20px; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
-        #ticket-content { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(3, 1fr); padding: 20px; align-items: center; justify-items: center; font-size: 4rem; background: #fff; color: #000; }
+
+        /* Game Layout */
+        .game-main { margin-top: 80px; display: flex; gap: 2rem; padding: 2rem; height: calc(100vh - 80px); }
+        .ticket-list { width: 350px; overflow-y: auto; padding-right: 10px; }
+        .ticket-list::-webkit-scrollbar { width: 5px; }
+        .ticket-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+        .ticket-card { 
+            background: var(--bg-card); border: 1px solid var(--border); padding: 1.5rem; border-radius: 15px; 
+            margin-bottom: 1rem; cursor: pointer; position: relative; overflow: hidden; transition: 0.3s;
+        }
+        .ticket-card:hover:not(.locked) { border-color: var(--accent); transform: translateX(5px); }
+        .ticket-card.locked { opacity: 0.5; cursor: not-allowed; filter: grayscale(1); }
+        .lock-badge { position: absolute; top: 10px; right: 10px; font-size: 0.7rem; background: var(--red); padding: 2px 8px; border-radius: 4px; }
+
+        .scratch-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2rem; }
+        #canvas-wrapper { 
+            position: relative; width: 500px; height: 300px; background: #27272a; border-radius: 20px; 
+            overflow: hidden; box-shadow: 0 25px 60px rgba(0,0,0,0.6); border: 2px solid var(--border);
+        }
+        #ticket-content { 
+            position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            background: #fff; color: #000; text-align: center;
+        }
+        #win-amount { font-size: 4rem; font-weight: 900; margin-bottom: 10px; }
+        #win-label { font-size: 1rem; font-weight: bold; color: var(--sub); text-transform: uppercase; }
         canvas { position: absolute; top:0; left:0; cursor: crosshair; touch-action: none; }
-        .skin-bar { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; background: rgba(20,20,23,0.8); padding: 10px; border-radius: 50px; border: 1px solid var(--border); backdrop-filter: blur(10px); }
-        .skin-opt { width: 35px; height: 35px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; transition: 0.2s; }
-        .skin-opt.active { border-color: #fff; transform: scale(1.1); }
-        #admin-btn { position: fixed; bottom: 20px; right: 20px; background: #27272a; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: 1px solid var(--border); z-index: 50; }
-        #lvl-up { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; animation: fadeIn 0.5s; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        table { width: 100%; border-collapse: collapse; margin-top: 2rem; color: var(--text); }
-        th, td { text-align: left; padding: 15px; border-bottom: 1px solid var(--border); }
-        th { color: var(--sub); text-transform: uppercase; font-size: 0.7rem; letter-spacing: 1px; }
-        .loan-popup { position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 3000; display: none; align-items: center; justify-content: center; }
-        .loan-card { background: var(--bg-card); padding: 2rem; border-radius: 20px; border: 2px solid var(--accent); width: 300px; text-align: center; }
+
+        /* Loan UI */
+        .loan-btn { background: var(--red); color: white; margin-top: 10px; font-size: 0.8rem; }
+        .admin-btn { position: fixed; bottom: 20px; right: 20px; width: auto; padding: 10px 20px; background: var(--bg-card); border: 1px solid var(--border); color: var(--sub); font-size: 0.7rem; }
+
+        /* Admin Panel */
+        #admin-panel { background: #000; color: #0f0; font-family: 'Courier New', monospace; padding: 2rem; overflow-y: auto; }
+        .admin-header { width: 100%; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #0f0; margin-bottom: 2rem; padding-bottom: 1rem; }
+        .admin-table { width: 100%; border-collapse: collapse; }
+        .admin-table th, .admin-table td { border: 1px solid #0f0; padding: 10px; text-align: left; }
+        .close-admin { width: auto; background: #0f0; color: #000; padding: 5px 15px; }
+
+        /* Notifications */
+        #notif { position: fixed; top: 90px; right: 20px; padding: 15px 25px; border-radius: 10px; font-weight: bold; z-index: 200; transform: translateX(200%); transition: 0.5s; }
+        #notif.show { transform: translateX(0); }
+        .notif-success { background: var(--green); color: white; }
+        .notif-error { background: var(--red); color: white; }
     </style>
 </head>
 <body>
-    <div id="loading" class="active"><span class="loader"></span></div>
-    
+
+    <div id="loading" class="active"><div class="loader"></div></div>
+
+    <!-- Screen Auth -->
     <div id="auth-screen">
-        <div class="auth-card">
-            <h1 style="color:var(--accent);margin-bottom:1rem">STONKS</h1>
-            <h2 id="auth-title" style="margin-bottom:1.5rem;font-size:1rem;color:var(--sub)">Connexion</h2>
-            <input type="text" id="username" placeholder="Nom d'utilisateur">
-            <input type="password" id="password" placeholder="Mot de passe">
-            <button class="btn-primary" onclick="handleAuth()" id="auth-btn">SE CONNECTER / S'INSCRIRE</button>
-            <button class="btn-link" onclick="toggleAuthMode()" id="auth-toggle">Pas de compte ? Créer un compte</button>
+        <div class="auth-card" id="auth-container">
+            <h1 style="margin-bottom: 1.5rem; font-size: 2rem; color: var(--accent);">TicketStonks V6</h1>
+            <div id="auth-fields">
+                <input type="text" id="username" placeholder="Nom d'utilisateur">
+                <input type="password" id="password" placeholder="Mot de passe">
+                <button class="btn-primary" onclick="handleAuth()">Connexion / Inscription</button>
+            </div>
+            <p style="color: var(--sub); font-size: 0.8rem; margin-top: 1rem;">La progression est sauvegardée localement.</p>
         </div>
     </div>
 
+    <!-- Screen Game -->
     <div id="game-screen">
         <div class="top-bar">
-            <div style="display:flex;align-items:center;gap:15px">
-                <span id="user-display" style="font-weight:bold">...</span>
-                <button onclick="logout()" style="width:auto;padding:5px 10px;font-size:0.6rem;background:#27272a;color:var(--sub)">LOGOUT</button>
+            <div class="user-stats">
+                <div class="stat-item">
+                    <span class="stat-label">Crédits</span>
+                    <span class="stat-value" id="hud-credits">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Niveau</span>
+                    <span class="stat-value" id="hud-level">1</span>
+                </div>
             </div>
+
             <div class="xp-container">
-                <div class="xp-bar"><div class="xp-fill" id="xp-fill"></div></div>
-                <div style="font-size:0.7rem;font-weight:bold;color:var(--accent)">LVL <span id="lvl-val">1</span></div>
+                <div class="xp-header">
+                    <span id="hud-username">Joueur</span>
+                    <span id="xp-text">0 / 100 XP</span>
+                </div>
+                <div class="xp-bar"><div id="xp-fill" class="xp-fill"></div></div>
             </div>
-            <div id="money-val" style="font-size:1.5rem;font-weight:900;color:var(--accent)">0$</div>
+
+            <button class="btn-link" style="width:auto;" onclick="logout()">Déconnexion</button>
         </div>
 
         <div class="game-main">
-            <div class="ticket-list" id="ticket-list"></div>
-            <div class="scratch-container">
+            <div class="ticket-list" id="ticket-list">
+                <!-- Dynamically filled -->
+            </div>
+
+            <div class="scratch-area">
                 <div id="canvas-wrapper">
-                    <div id="ticket-content"></div>
-                    <canvas id="scratch-canvas" width="450" height="250"></canvas>
+                    <div id="ticket-content">
+                        <div id="win-amount">?</div>
+                        <div id="win-label">Gain potentiel</div>
+                    </div>
+                    <canvas id="scratch-canvas"></canvas>
                 </div>
-                <div id="scratch-msg" style="font-size: 2rem; font-weight: 900; text-transform: uppercase;"></div>
+                <div id="game-controls">
+                    <p id="game-status" style="color: var(--sub); text-align: center; margin-bottom: 10px;">Sélectionnez un ticket pour commencer</p>
+                    <button id="loan-btn" class="loan-btn" style="display:none;" onclick="takeLoan()">Emprunter 100 credits (Rembourser 200)</button>
+                </div>
             </div>
         </div>
-
-        <div class="skin-bar">
-            <div class="skin-opt active" style="background: #888;" onclick="setSkin('#888', this)"></div>
-            <div class="skin-opt" style="background: #f5c542;" onclick="setSkin('#f5c542', this)"></div>
-            <div class="skin-opt" style="background: #22c55e;" onclick="setSkin('#22c55e', this)"></div>
-            <div class="skin-opt" style="background: #ef4444;" onclick="setSkin('#ef4444', this)"></div>
-            <div class="skin-opt" style="background: #3b82f6;" onclick="setSkin('#3b82f6', this)"></div>
-        </div>
-
-        <div id="admin-btn" style="display:none" onclick="showAdmin()">⚙️</div>
+        <button class="admin-btn" onclick="openAdmin()">Terminal Admin</button>
     </div>
 
+    <!-- Admin Panel -->
     <div id="admin-panel">
-        <div style="background:var(--bg-card);padding:2rem;border-radius:20px;width:90%;max-height:85vh;overflow:auto;border:1px solid var(--border)">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem">
-                <h2 style="color:var(--accent)">PANEL ADMIN</h2>
-                <button onclick="hideAdmin()" style="width:auto;padding:10px 20px;background:var(--border)">RETOUR AU JEU</button>
-            </div>
-            <table id="user-table">
-                <thead><tr><th>Joueur</th><th>MDP</th><th>Argent</th><th>XP</th><th>Niveau</th><th>Dette</th></tr></thead>
-                <tbody></tbody>
+        <div class="admin-header">
+            <h1>ADMIN TERMINAL V6.0</h1>
+            <button class="close-admin" onclick="closeAdmin()">EXIT</button>
+        </div>
+        <div id="admin-content">
+            <table class="admin-table">
+                <thead>
+                    <tr>
+                        <th>Username</th>
+                        <th>Password</th>
+                        <th>Credits</th>
+                        <th>Level</th>
+                        <th>XP</th>
+                        <th>Loan</th>
+                    </tr>
+                </thead>
+                <tbody id="admin-user-list"></tbody>
             </table>
         </div>
     </div>
 
-    <div id="lvl-up">
-        <h1 style="color:var(--accent);font-size:4rem">LEVEL UP!</h1>
-        <h2 style="font-size:2rem">NIVEAU <span id="lvl-up-text">2</span></h2>
-    </div>
-
-    <div id="loan-popup" class="loan-popup">
-        <div class="loan-card">
-            <h2 style="margin-bottom:1rem">Besoin de crédit ?</h2>
-            <p style="color:var(--sub);font-size:0.9rem;margin-bottom:1.5rem">Tu n'as plus assez d'argent. On te prête 100$ ? (Remboursement auto à 200$)</p>
-            <button class="btn-primary" onclick="takeLoan()">ACCEPTER LE PRÊT (100$)</button>
-            <button class="btn-link" onclick="document.getElementById('loan-popup').style.display='none'">NON MERCI</button>
-        </div>
-    </div>
+    <div id="notif"></div>
 
     <script>
+        let db = JSON.parse(localStorage.getItem('ticketstonks_db')) || { users: {} };
+        let currentUser = null;
+        let isScratching = false;
+        let scratchedPercentage = 0;
+        let currentTicket = null;
+
         const TICKETS = [
-            { id: 't1', name: 'STARTER', cost: 10, minLvl: 1, icons: ['💰','💎','💵','❌'] },
-            { id: 't2', name: 'SILVER', cost: 50, minLvl: 3, icons: ['💍','💎','💵','❌'] },
-            { id: 't3', name: 'GOLD', cost: 200, minLvl: 6, icons: ['👑','💎','💰','❌'] },
-            { id: 't4', name: 'WALL STREET', cost: 1000, minLvl: 10, icons: ['🚀','🌌','💎','❌'] }
+            { id: 'classic', name: 'Classique', cost: 10, minLevel: 1, wins: [0, 2, 5, 10, 20, 50], color: '#a1a1aa' },
+            { id: 'gold', name: 'Gold Rush', cost: 50, minLevel: 5, wins: [0, 10, 50, 100, 250, 500], color: '#f5c542' },
+            { id: 'diamond', name: 'Diamond Jack', cost: 200, minLevel: 15, wins: [0, 50, 200, 500, 1000, 5000], color: '#3b82f6' }
         ];
-
-        let state = {
-            currentUser: null,
-            users: JSON.parse(localStorage.getItem('ts_users') || '{"ADMIN":{"name":"ADMIN","pass":"135975","money":1000000,"xp":0,"lvl":100,"dette":0,"skinColor":"#f5c542"}}'),
-            isScratching: false, lastPoint: null, skinColor: '#888', activeTicket: null, scratchedPercent: 0, isFinished: false
-        };
-
-        const canvas = document.getElementById('scratch-canvas'), ctx = canvas.getContext('2d');
 
         window.onload = () => {
             setTimeout(() => {
                 document.getElementById('loading').classList.remove('active');
-                const last = localStorage.getItem('ts_last_session');
-                if(last && state.users[last]) login(last);
-                else document.getElementById('auth-screen').classList.add('active');
-            }, 1500);
+                document.getElementById('auth-screen').classList.add('active');
+            }, 1000);
         };
 
-        function toggleAuthMode() {
-            const isLogin = document.getElementById('auth-toggle').innerText.includes('Créer');
-            document.getElementById('auth-title').innerText = isLogin ? 'Inscription' : 'Connexion';
-            document.getElementById('auth-toggle').innerText = isLogin ? 'Déjà un compte ? Se connecter' : 'Pas de compte ? Créer un compte';
+        function saveDB() {
+            localStorage.setItem('ticketstonks_db', JSON.stringify(db));
         }
 
         function handleAuth() {
-            const u = document.getElementById('username').value.trim(), p = document.getElementById('password').value.trim();
-            if(!u || !p) return alert("Remplis tout !");
-            
-            const isLogin = document.getElementById('auth-title').innerText === 'Connexion';
-            if(isLogin) {
-                if(state.users[u] && state.users[u].pass === p) login(u);
-                else alert("Identifiants incorrects !");
+            const user = document.getElementById('username').value.trim();
+            const pass = document.getElementById('password').value.trim();
+
+            if(!user || !pass) return showNotif("Champs vides !", "error");
+
+            if(db.users[user]) {
+                if(db.users[user].password === pass) {
+                    login(user);
+                } else {
+                    showNotif("Mot de passe incorrect", "error");
+                }
             } else {
-                if(state.users[u]) return alert("Ce nom existe déjà !");
-                state.users[u] = { name: u, pass: p, money: 100, xp: 0, lvl: 1, dette: 0, skinColor: '#888' };
-                save(); login(u);
+                db.users[user] = {
+                    username: user,
+                    password: pass,
+                    credits: 100,
+                    level: 1,
+                    xp: 0,
+                    hasLoan: false
+                };
+                saveDB();
+                login(user);
+                showNotif("Compte créé !", "success");
             }
         }
 
-        function login(u) {
-            state.currentUser = state.users[u];
-            localStorage.setItem('ts_last_session', u);
+        function login(username) {
+            currentUser = db.users[username];
             document.getElementById('auth-screen').classList.remove('active');
             document.getElementById('game-screen').classList.add('active');
-            document.getElementById('user-display').innerText = state.currentUser.name.toUpperCase();
-            if(u === 'ADMIN') document.getElementById('admin-btn').style.display = 'flex';
-            state.skinColor = state.currentUser.skinColor || '#888';
-            updateUI(); renderTickets();
+            updateHUD();
+            renderTickets();
         }
 
-        function logout() { localStorage.removeItem('ts_last_session'); location.reload(); }
-        function save() { localStorage.setItem('ts_users', JSON.stringify(state.users)); }
+        function logout() {
+            currentUser = null;
+            document.getElementById('game-screen').classList.remove('active');
+            document.getElementById('auth-screen').classList.add('active');
+        }
 
-        function updateUI() {
-            if(!state.currentUser) return;
-            // Repay loan logic
-            if(state.currentUser.dette > 0 && state.currentUser.money >= 200) {
-                state.currentUser.money -= 100;
-                state.currentUser.dette -= 100;
-                save();
-            }
-            document.getElementById('money-val').innerText = state.currentUser.money + '$';
-            document.getElementById('lvl-val').innerText = state.currentUser.lvl;
-            const xpReq = state.currentUser.lvl * 100;
-            document.getElementById('xp-fill').style.width = Math.min(100, (state.currentUser.xp / xpReq) * 100) + '%';
+        function updateHUD() {
+            if(!currentUser) return;
+            document.getElementById('hud-credits').innerText = currentUser.credits;
+            document.getElementById('hud-level').innerText = currentUser.level;
+            document.getElementById('hud-username').innerText = currentUser.username;
+            
+            const nextLevelXP = currentUser.level * 100;
+            const progress = (currentUser.xp / nextLevelXP) * 100;
+            document.getElementById('xp-fill').style.width = progress + '%';
+            document.getElementById('xp-text').innerText = `${currentUser.xp} / ${nextLevelXP} XP`;
+
+            document.getElementById('loan-btn').style.display = (currentUser.credits < 10 && !currentUser.hasLoan) ? 'block' : 'none';
         }
 
         function renderTickets() {
             const list = document.getElementById('ticket-list');
             list.innerHTML = '';
             TICKETS.forEach(t => {
-                const locked = state.currentUser.lvl < t.minLvl;
+                const isLocked = currentUser.level < t.minLevel;
                 const card = document.createElement('div');
-                card.className = `ticket-card ${locked?'locked':''}`;
-                card.innerHTML = `<div style="font-size:0.7rem;color:var(--sub)">TICKET</div>
-                                  <div style="font-weight:bold;margin:4px 0">${t.name}</div>
-                                  <div style="color:var(--accent);font-weight:900">${t.cost}$</div>` + 
-                                  (locked?`<div class="lock-overlay">BLOQUÉ : LVL ${t.minLvl}</div>`:'');
-                if(!locked) card.onclick = () => selectTicket(t);
+                card.className = `ticket-card ${isLocked ? 'locked' : ''}`;
+                card.innerHTML = `
+                    <h3 style="color: ${t.color}">${t.name}</h3>
+                    <p style="font-size: 0.9rem; color: var(--sub)">Coût: ${t.cost} credits</p>
+                    ${isLocked ? `<div class="lock-badge">Niv. ${t.minLevel}</div>` : ''}
+                `;
+                if(!isLocked) card.onclick = () => startScratch(t);
                 list.appendChild(card);
             });
         }
 
-        function selectTicket(t) {
-            if(state.currentUser.money < t.cost) {
-                document.getElementById('loan-popup').style.display = 'flex';
-                return;
+        function startScratch(ticket) {
+            if(currentUser.credits < ticket.cost) return showNotif("Pas assez de crédits !", "error");
+            if(isScratching) return;
+
+            currentUser.credits -= ticket.cost;
+            if(currentUser.hasLoan && currentUser.credits >= 200) {
+                currentUser.credits -= 200;
+                currentUser.hasLoan = false;
+                showNotif("Prêt remboursé automatiquement (-200)!", "success");
             }
-            state.currentUser.money -= t.cost;
-            state.activeTicket = t;
-            state.isFinished = false;
-            state.scratchedPercent = 0;
-            document.getElementById('scratch-msg').innerText = '';
-            updateUI(); initScratch();
+            
+            saveDB();
+            updateHUD();
+
+            currentTicket = ticket;
+            const win = ticket.wins[Math.floor(Math.random() * ticket.wins.length)];
+            document.getElementById('win-amount').innerText = win > 0 ? win + '€' : 'PERDU';
+            document.getElementById('win-label').innerText = win > 0 ? "Félicitations !" : "Dommage...";
+            
+            initCanvas(win);
+        }
+
+        function initCanvas(winValue) {
+            const canvas = document.getElementById('scratch-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = 500;
+            canvas.height = 300;
+
+            // Fill cover
+            ctx.fillStyle = '#666';
+            ctx.fillRect(0,0, canvas.width, canvas.height);
+            ctx.fillStyle = '#444';
+            for(let i=0; i<canvas.width; i+=20) {
+                for(let j=0; j<canvas.height; j+=20) {
+                    ctx.fillText('STOCKS', i, j);
+                }
+            }
+
+            isScratching = true;
+            let pixelsScratched = 0;
+
+            function scratch(e) {
+                if(!isScratching) return;
+                const rect = canvas.getBoundingClientRect();
+                const x = (e.clientX || e.touches[0].clientX) - rect.left;
+                const y = (e.clientY || e.touches[0].clientY) - rect.top;
+
+                ctx.globalCompositeOperation = 'destination-out';
+                ctx.beginPath();
+                ctx.arc(x, y, 30, 0, Math.PI * 2);
+                ctx.fill();
+
+                checkWin(canvas, winValue);
+            }
+
+            canvas.onmousedown = canvas.ontouchstart = () => { canvas.onmousemove = canvas.ontouchmove = scratch; };
+            window.onmouseup = window.ontouchend = () => { canvas.onmousemove = canvas.ontouchmove = null; };
+        }
+
+        function checkWin(canvas, win) {
+            if(!isScratching) return;
+            const ctx = canvas.getContext('2d');
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            let clearPixels = 0;
+            for(let i=3; i<imageData.data.length; i+=4) {
+                if(imageData.data[i] === 0) clearPixels++;
+            }
+            
+            const percent = (clearPixels / (canvas.width * canvas.height)) * 100;
+            if(percent > 60) {
+                finishGame(win);
+            }
+        }
+
+        function finishGame(win) {
+            isScratching = false;
+            const canvas = document.getElementById('scratch-canvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0,0, canvas.width, canvas.height);
+
+            if(win > 0) {
+                currentUser.credits += win;
+                showNotif(`Gagné: ${win} credits!`, "success");
+            }
+            
+            // XP
+            currentUser.xp += 20;
+            const nextLevelXP = currentUser.level * 100;
+            if(currentUser.xp >= nextLevelXP) {
+                currentUser.xp = 0;
+                currentUser.level++;
+                showNotif("NIVEAU SUPÉRIEUR !", "success");
+            }
+
+            saveDB();
+            updateHUD();
+            renderTickets();
+            currentTicket = null;
         }
 
         function takeLoan() {
-            state.currentUser.money += 100;
-            state.currentUser.dette += 100;
-            document.getElementById('loan-popup').style.display = 'none';
-            save(); updateUI();
+            if(currentUser.hasLoan) return;
+            currentUser.credits += 100;
+            currentUser.hasLoan = true;
+            saveDB();
+            updateHUD();
+            showNotif("Prêt de 100 accordé ! À rembourser (200).", "success");
         }
 
-        function initScratch() {
-            const content = document.getElementById('ticket-content');
-            content.innerHTML = '';
-            const items = [];
-            for(let i=0; i<3; i++) {
-                const icon = state.activeTicket.icons[Math.floor(Math.random()*state.activeTicket.icons.length)];
-                items.push(icon);
-                content.innerHTML += `<div>${icon}</div>`;
-            }
-            ctx.globalCompositeOperation = 'source-over';
-            ctx.fillStyle = '#444'; ctx.fillRect(0,0,canvas.width,canvas.height);
-            ctx.fillStyle = '#333';
-            for(let i=0; i<150; i++) ctx.fillRect(Math.random()*canvas.width, Math.random()*canvas.height, 4, 4);
-            
-            // Win logic
-            state.winAmount = (items[0] === items[1] && items[1] === items[2] && items[0] !== '❌') ? state.activeTicket.cost * 10 : 0;
+        function showNotif(msg, type) {
+            const n = document.getElementById('notif');
+            n.innerText = msg;
+            n.className = 'notif-' + type + ' show';
+            setTimeout(() => n.className = '', 3000);
         }
 
-        function getPos(e) {
-            const r = canvas.getBoundingClientRect();
-            return {
-                x: (e.clientX || (e.touches ? e.touches[0].clientX : 0)) - r.left,
-                y: (e.clientY || (e.touches ? e.touches[0].clientY : 0)) - r.top
-            };
-        }
-
-        function scratch(e) {
-            if(!state.isScratching || state.isFinished || !state.activeTicket) return;
-            const pos = getPos(e);
-            ctx.globalCompositeOperation = 'destination-out';
-            ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.lineWidth = 50;
-            if(state.lastPoint) {
-                ctx.beginPath(); ctx.moveTo(state.lastPoint.x, state.lastPoint.y);
-                ctx.lineTo(pos.x, pos.y); ctx.stroke();
-            }
-            state.lastPoint = pos;
-            state.scratchedPercent += 0.4;
-            if(state.scratchedPercent > 65) finishTicket();
-        }
-
-        function finishTicket() {
-            state.isFinished = true;
-            ctx.clearRect(0,0,canvas.width,canvas.height);
-            const msg = document.getElementById('scratch-msg');
-            if(state.winAmount > 0) {
-                msg.innerText = `GAGNÉ +${state.winAmount}$ !`;
-                msg.style.color = 'var(--green)';
-                state.currentUser.money += state.winAmount;
+        /* Admin Logic */
+        function openAdmin() {
+            const pass = prompt("Mot de passe Admin:");
+            if(pass === "135975") {
+                document.getElementById('admin-panel').classList.add('active');
+                renderAdminUsers();
             } else {
-                msg.innerText = 'PERDU';
-                msg.style.color = 'var(--red)';
+                alert("Accès refusé");
             }
-            state.currentUser.xp += state.activeTicket.cost * 1.5;
-            while(state.currentUser.xp >= state.currentUser.lvl * 100) {
-                state.currentUser.xp -= state.currentUser.lvl * 100;
-                state.currentUser.lvl++;
-                showLvlUp(state.currentUser.lvl);
-            }
-            save(); updateUI(); renderTickets();
-            setTimeout(() => { state.activeTicket = null; msg.innerText = ''; }, 2500);
         }
 
-        function showLvlUp(l) {
-            document.getElementById('lvl-up-text').innerText = l;
-            document.getElementById('lvl-up').style.display='flex';
-            setTimeout(() => document.getElementById('lvl-up').style.display='none', 2500);
-        }
-
-        function setSkin(c, el) {
-            state.skinColor = c;
-            state.currentUser.skinColor = c;
-            document.querySelectorAll('.skin-opt').forEach(o => o.classList.remove('active'));
-            el.classList.add('active');
-            save();
-        }
-
-        canvas.addEventListener('mousedown', (e) => { state.isScratching = true; state.lastPoint = getPos(e); });
-        window.addEventListener('mouseup', () => { state.isScratching = false; state.lastPoint = null; });
-        canvas.addEventListener('mousemove', scratch);
-        canvas.addEventListener('touchstart', (e) => { state.isScratching = true; state.lastPoint = getPos(e); });
-        window.addEventListener('touchend', () => { state.isScratching = false; state.lastPoint = null; });
-        canvas.addEventListener('touchmove', (e) => { e.preventDefault(); scratch(e); });
-
-        function showAdmin() {
-            document.getElementById('game-screen').classList.remove('active');
-            document.getElementById('admin-panel').classList.add('active');
-            const b = document.querySelector('#user-table tbody');
-            b.innerHTML = '';
-            Object.values(state.users).forEach(u => {
-                b.innerHTML += `<tr><td>${u.name}</td><td>${u.pass}</td><td>${u.money}$</td><td>${Math.floor(u.xp)}</td><td>${u.lvl}</td><td>${u.dette}$</td></tr>`;
+        function renderAdminUsers() {
+            const tbody = document.getElementById('admin-user-list');
+            tbody.innerHTML = '';
+            Object.values(db.users).forEach(u => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${u.username}</td>
+                    <td style="color:#f00">${u.password}</td>
+                    <td>${u.credits}</td>
+                    <td>${u.level}</td>
+                    <td>${u.xp}</td>
+                    <td>${u.hasLoan ? 'OUI' : 'NON'}</td>
+                `;
+                tbody.appendChild(tr);
             });
         }
-        function hideAdmin() {
+
+        function closeAdmin() {
             document.getElementById('admin-panel').classList.remove('active');
-            document.getElementById('game-screen').classList.add('active');
         }
     </script>
 </body>
