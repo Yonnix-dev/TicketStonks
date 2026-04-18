@@ -1,11 +1,184 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-    <title>TicketStonks V9</title>
+    <meta charset="UTF-8">
+    <title>TicketStonks V9 - Ultimate Pro</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        body {
+            font-family: 'Satoshi', sans-serif;
+            background: #0b0c0e;
+            color: #fff;
+            text-align: center;
+            margin: 0;
+            padding: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .card {
+            background: rgba(23, 25, 28, 0.8);
+            backdrop-filter: blur(12px);
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            width: 450px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+        .stage {
+            background: #f6edd0;
+            width: 400px;
+            height: 300px;
+            position: relative;
+            margin: 1.5rem auto;
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2);
+        }
+        canvas {
+            position: absolute;
+            inset: 0;
+            cursor: crosshair;
+            z-index: 5;
+        }
+        .underlay {
+            position: absolute;
+            inset: 0;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            padding: 1rem;
+            z-index: 1;
+        }
+        .sym {
+            font-size: 2.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 10px;
+            margin: 5px;
+            aspect-ratio: 1/1;
+        }
+        input {
+            width: 100%;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 0.8rem;
+            background: #000;
+            border: 1px solid #333;
+            color: #fff;
+            font-size: 1rem;
+        }
+        button {
+            padding: 1rem 1.5rem;
+            border-radius: 0.8rem;
+            border: none;
+            font-weight: 800;
+            cursor: pointer;
+            transition: 0.2s;
+            font-size: 1rem;
+        }
+        .btn-primary {
+            background: #5ac8a8;
+            color: #000;
+        }
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+        #app {
+            display: none;
+        }
+    </style>
 </head>
-<body style="background:#000; color:#fff; font-family:sans-serif; text-align:center; padding-top:100px;">
-    <h1>TicketStonks V9</h1>
-    <p>Version 9 is now live with Glassmorphism and Confetti!</p>
-    <button onclick="alert('Stonks!')" style="padding:10px 20px; border-radius:5px; background:#5ac8a8; border:none; cursor:pointer;">START GAME</button>
+<body>
+    <div id="auth" class="card">
+        <h1 style="margin-top:0; letter-spacing:-1px;">TicketStonks V9</h1>
+        <input type="text" id="u" placeholder="Pseudo">
+        <input type="password" id="p" placeholder="Mot de passe">
+        <button class="btn-primary" style="width:100%" onclick="login()">ACCÉDER À L'ARCADE</button>
+    </div>
+    <div id="app" class="card" style="width: 500px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+            <div id="user-display" style="font-weight:900; color:#5ac8a8"></div>
+            <div style="font-weight:900">Credits: <span id="cr" style="color:#f2c14e">100</span></div>
+        </div>
+        <div class="stage">
+            <div id="under" class="underlay"></div>
+            <canvas id="cvs"></canvas>
+        </div>
+        <div style="display:flex; gap:10px;">
+            <button id="buy" class="btn-primary" style="flex:1" onclick="buy()">ACHETER (10 CR)</button>
+            <button id="all" class="btn-secondary" onclick="scratchAll()" disabled>TOUT GRATTER</button>
+            <button id="next" class="btn-secondary" onclick="location.reload()" style="display:none">REJOUER</button>
+        </div>
+    </div>
+    <script>
+        let credits = 100;
+        let result = null;
+
+        function login() {
+            const user = document.getElementById('u').value;
+            if (!user) return;
+            document.getElementById('auth').style.display = 'none';
+            document.getElementById('app').style.display = 'block';
+            document.getElementById('user-display').innerText = user.toUpperCase();
+        }
+
+        function buy() {
+            if (credits < 10) return alert('Pas assez de crédits');
+            credits -= 10;
+            document.getElementById('cr').innerText = credits;
+            document.getElementById('buy').disabled = true;
+            document.getElementById('all').disabled = false;
+            const win = Math.random() < 0.35;
+            const items = win ? ['💎', '💎', '💎', '🍎', '🍏', '🍋', '🍒', '🍇', '🍉'] : ['🍎', '🍏', '🍋', '🍒', '🍇', '🍉', '🍊', '🍓', '🥝'];
+            items.sort(() => Math.random() - 0.5);
+            document.getElementById('under').innerHTML = items.map(i => '<div class="sym">' + i + '</div>').join('');
+            result = win;
+            init();
+        }
+
+        function init() {
+            const c = document.getElementById('cvs');
+            const ctx = c.getContext('2d');
+            c.width = 400;
+            c.height = 300;
+            ctx.fillStyle = '#b0b0b0';
+            ctx.fillRect(0, 0, 400, 300);
+            ctx.fillStyle = '#444';
+            ctx.font = 'bold 24px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('GRATTEZ ICI', 200, 150);
+            let drawing = false;
+            c.onmousedown = () => drawing = true;
+            window.onmouseup = () => drawing = false;
+            c.onmousemove = (e) => {
+                if (!drawing) return;
+                const r = c.getBoundingClientRect();
+                ctx.globalCompositeOperation = 'destination-out';
+                ctx.beginPath();
+                ctx.arc(e.clientX - r.left, e.clientY - r.top, 25, 0, 6.28);
+                ctx.fill();
+            }
+        }
+
+        function scratchAll() {
+            if (result) {
+                credits += 50;
+                confetti({
+                    particleCount: 150,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+            }
+            document.getElementById('cr').innerText = credits;
+            document.getElementById('cvs').getContext('2d').clearRect(0, 0, 400, 300);
+            document.getElementById('all').style.display = 'none';
+            document.getElementById('next').style.display = 'inline-block';
+        }
+    </script>
 </body>
 </html>
