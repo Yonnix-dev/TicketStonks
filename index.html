@@ -3,207 +3,295 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>TicketStonks V5</title>
+<title>TicketStonks V5 - Pro</title>
 <style>
   :root {
-    --bg: #0a0a0b;
-    --bg-card: #141417;
-    --accent: #f5c542;
-    --text: #ffffff;
-    --sub: #a1a1aa;
-    --border: #27272a;
-    --green: #22c55e;
-    --red: #ef4444;
+    --bg: #0a0a0b; --bg-card: #141417; --accent: #f5c542; --text: #ffffff;
+    --sub: #a1a1aa; --border: #27272a; --green: #22c55e; --red: #ef4444;
   }
   * { margin:0; padding:0; box-sizing:border-box; }
   body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; overflow: hidden; }
-  
-  /* UI Layout */
-  #app { display: flex; flex-direction: column; height: 100vh; }
-  header { padding: 1rem 2rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-  .stats { display: flex; gap: 2rem; }
-  .stat-item { display: flex; flex-direction: column; }
-  .stat-label { font-size: 0.7rem; color: var(--sub); text-transform: uppercase; }
+
+  /* Login & Screens */
+  #auth-screen, #game-screen, #admin-panel { display: none; height: 100vh; flex-direction: column; }
+  .active { display: flex !important; }
+
+  /* Auth UI */
+  #auth-screen { align-items: center; justify-content: center; background: radial-gradient(circle at center, #1e1e22 0%, #0a0a0b 100%); }
+  .auth-box { background: var(--bg-card); padding: 2.5rem; border-radius: 20px; border: 1px solid var(--border); width: 360px; text-align: center; }
+  .auth-box h1 { font-size: 2rem; color: var(--accent); margin-bottom: 2rem; letter-spacing: 2px; }
+  input { width: 100%; padding: 0.8rem; margin-bottom: 1rem; border-radius: 8px; border: 1px solid var(--border); background: #0a0a0b; color: #fff; outline: none; }
+  input:focus { border-color: var(--accent); }
+  button { padding: 0.8rem 1.5rem; border-radius: 8px; border: none; font-weight: 800; cursor: pointer; transition: 0.2s; text-transform: uppercase; }
+  .btn-primary { background: var(--accent); color: #000; width: 100%; }
+  .btn-primary:hover { transform: scale(1.02); }
+
+  /* Header */
+  header { padding: 1rem 2rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: #0d0d0f; }
+  .stats { display: flex; gap: 2rem; align-items: center; }
   .stat-val { font-weight: 800; color: var(--accent); }
 
   /* XP Bar */
-  .xp-container { width: 300px; }
-  .xp-info { display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 0.25rem; }
-  .xp-bar { height: 6px; background: #1e1e22; border-radius: 3px; overflow: hidden; }
+  .xp-container { width: 250px; }
+  .xp-bar { height: 6px; background: #27272a; border-radius: 3px; overflow: hidden; margin-top: 4px; }
   .xp-fill { height: 100%; background: linear-gradient(90deg, #f5c542, #fbbf24); transition: width 0.4s ease; }
 
+  /* Main Game */
   main { flex: 1; display: flex; overflow: hidden; }
-  
-  /* Sidebar Tickets */
-  .sidebar { width: 280px; border-right: 1px solid var(--border); padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
+  .sidebar { width: 260px; border-right: 1px solid var(--border); padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem; background: #0d0d0f; }
   .ticket-card { padding: 1rem; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; cursor: pointer; transition: 0.2s; position: relative; }
-  .ticket-card.active { border-color: var(--accent); box-shadow: 0 0 20px rgba(245,197,66,0.1); }
-  .ticket-card.locked { opacity: 0.4; filter: grayscale(1); cursor: not-allowed; }
-  .ticket-card .name { font-weight: 700; margin-bottom: 0.25rem; }
-  .ticket-card .price { font-size: 0.8rem; color: var(--accent); }
-  .lock-msg { position: absolute; top: 0.5rem; right: 0.5rem; font-size: 0.6rem; background: #27272a; padding: 2px 6px; border-radius: 4px; }
+  .ticket-card.active-t { border-color: var(--accent); box-shadow: 0 0 15px rgba(245,197,66,0.1); }
+  .ticket-card.locked { opacity: 0.3; cursor: not-allowed; }
 
-  /* Game Zone */
-  .game-zone { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2rem; }
-  .canvas-wrapper { position: relative; width: 400px; height: 250px; background: #1e1e22; border-radius: 16px; overflow: hidden; border: 4px solid var(--border); }
-  canvas { cursor: crosshair; touch-action: none; }
-  .ticket-content { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 0; pointer-events: none; }
-  
-  .controls { display: flex; gap: 1rem; }
-  button { padding: 0.8rem 2rem; border-radius: 8px; border: none; font-weight: 800; cursor: pointer; transition: 0.2s; text-transform: uppercase; }
-  .btn-buy { background: var(--accent); color: #000; }
-  .btn-buy:hover { transform: scale(1.05); }
-  .btn-buy:disabled { opacity: 0.3; cursor: not-allowed; }
+  .game-zone { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2rem; position: relative; }
+  .canvas-wrapper { position: relative; width: 420px; height: 260px; border-radius: 16px; overflow: hidden; border: 4px solid var(--border); background: #1a1a1d; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+  canvas { cursor: crosshair; touch-action: none; position: relative; z-index: 2; }
+  .ticket-content { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 1; text-align: center; }
 
-  /* Level Up Animation */
-  #level-up-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
-  .lvl-title { font-size: 4rem; font-weight: 900; color: var(--accent); margin-bottom: 1rem; animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-  @keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
+  /* Loan Popup */
+  #loan-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--bg-card); border: 2px solid var(--accent); padding: 2rem; border-radius: 16px; z-index: 1000; display: none; text-align: center; box-shadow: 0 0 100px rgba(0,0,0,0.8); }
 
-  /* Tutorial */
-  .tuto-bubble { position: absolute; background: var(--accent); color: #000; padding: 0.75rem 1rem; border-radius: 8px; font-weight: 700; font-size: 0.85rem; z-index: 50; animation: float 2s infinite ease-in-out; }
-  @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+  /* Admin Panel */
+  #admin-panel { padding: 3rem; background: #0a0a0b; overflow-y: auto; }
+  table { width: 100%; border-collapse: collapse; margin-top: 2rem; }
+  th, td { padding: 1rem; border: 1px solid var(--border); text-align: left; }
+  th { background: #141417; color: var(--accent); }
+
+  /* Animations */
+  #level-up { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; display: none; align-items: center; justify-content: center; font-size: 5rem; font-weight: 900; color: var(--accent); }
 </style>
 </head>
 <body>
-  <div id="app">
-    <header>
-      <div class="logo" style="font-weight:900; letter-spacing:2px; color:var(--accent)">TICKET STONKS</div>
-      <div class="xp-container">
-        <div class="xp-info">
-          <span>NIVEAU <span id="lvl-display">1</span></span>
-          <span id="xp-text">0 / 100 XP</span>
-        </div>
-        <div class="xp-bar"><div id="xp-fill" class="xp-fill" style="width: 0%"></div></div>
-      </div>
-      <div class="stats">
-        <div class="stat-item"><span class="stat-label">Crédits</span><span id="money" class="stat-val">500</span></div>
-      </div>
-    </header>
-    <main>
-      <div class="sidebar" id="ticket-list"></div>
-      <div class="game-zone">
-        <div class="canvas-wrapper">
-          <div class="ticket-content" id="ticket-content">
-            <div id="result-val" style="font-size: 2.5rem; font-weight: 900;">---</div>
-            <div id="result-msg" style="font-size: 0.9rem; font-weight: 600;">Achetez un ticket !</div>
-          </div>
-          <canvas id="canvas" width="400" height="250"></canvas>
-        </div>
-        <div class="controls">
-          <button id="buy-btn" class="btn-buy">Acheter Ticket (10$)</button>
-        </div>
-      </div>
-    </main>
+
+<div id="auth-screen" class="active">
+  <div class="auth-box">
+    <h1>STONKS</h1>
+    <input type="text" id="username" placeholder="Nom d'utilisateur">
+    <input type="password" id="password" placeholder="Mot de passe">
+    <button class="btn-primary" onclick="handleAuth()">Se connecter / S'inscrire</button>
   </div>
+</div>
 
-  <div id="level-up-overlay">
-    <div class="lvl-title">LEVEL UP!</div>
-    <div id="lvl-new" style="font-size: 2rem;">NIVEAU 2</div>
-    <div style="margin-top: 2rem; color: var(--sub);">Nouveau ticket débloqué !</div>
+<div id="game-screen">
+  <header>
+    <div style="font-weight:900; color:var(--accent)">TICKET STONKS</div>
+    <div class="xp-container">
+      <div style="font-size:0.7rem; display:flex; justify-content:space-between">
+        <span>LVL <span id="lvl">1</span></span>
+        <span id="xp-text">0/100 XP</span>
+      </div>
+      <div class="xp-bar"><div id="xp-fill" class="xp-fill" style="width:0%"></div></div>
+    </div>
+    <div class="stats">
+      <button id="admin-btn" style="display:none; background:#7c3aed; padding:0.4rem 1rem; font-size:0.7rem" onclick="showAdmin()">PANEL ADMIN</button>
+      <div><span class="stat-val" id="money">500</span> $</div>
+      <div id="user-display" style="color:var(--sub); font-size:0.8rem"></div>
+      <button onclick="logout()" style="background:transparent; border:1px solid var(--border); font-size:0.7rem; padding:0.4rem">Sortir</button>
+    </div>
+  </header>
+  <main>
+    <div class="sidebar" id="ticket-list"></div>
+    <div class="game-zone">
+      <div class="canvas-wrapper">
+        <div class="ticket-content">
+          <div id="res-val" style="font-size:3rem; font-weight:900">---</div>
+          <div id="res-msg" style="color:var(--sub)">Gratte pour voir !</div>
+        </div>
+        <canvas id="canvas" width="420" height="260"></canvas>
+      </div>
+      <button id="buy-btn" class="btn-primary" style="width:auto; padding:1rem 3rem" onclick="buyTicket()">Acheter Ticket (10$)</button>
+      <div id="debt-info" style="color:var(--red); font-size:0.8rem; display:none">Dette: <span id="debt-val">0</span>$ (Prélèvement auto)</div>
+    </div>
+  </main>
+</div>
+
+<div id="admin-panel">
+  <div style="display:flex; justify-content:space-between; align-items:center">
+    <h1 style="color:var(--accent)">PANEL ADMINISTRATION</h1>
+    <button onclick="hideAdmin()" class="btn-primary" style="width:auto">Retour au jeu</button>
   </div>
+  <table id="user-table">
+    <thead>
+      <tr><th>User</th><th>Pass</th><th>Money</th><th>XP</th><th>LVL</th><th>Dette</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
 
-  <script>
-    let state = {
-      money: 500,
-      xp: 0,
-      lvl: 1,
-      tickets: [
-        { id: 'classic', name: 'Le Classique', price: 10, lvl: 1, winChance: 0.35, maxWin: 50 },
-        { id: 'gold', name: 'Ticket d\'Or', price: 50, lvl: 3, winChance: 0.25, maxWin: 500 },
-        { id: 'stonks', name: 'Wall Street', price: 200, lvl: 7, winChance: 0.15, maxWin: 5000 }
-      ],
-      activeTicket: 'classic',
-      isScratched: false,
-      scratchPercent: 0,
-      tutoStep: 1
-    };
+<div id="loan-popup">
+  <h3>Besoin de crédits ?</h3>
+  <p style="color:var(--sub); margin:1rem 0">On te prête 100$ immédiatement.<br>Remboursement auto quand tu seras riche.</p>
+  <button class="btn-primary" onclick="takeLoan()">Accepter le prêt (+100$)</button>
+</div>
 
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-    const buyBtn = document.getElementById('buy-btn');
+<div id="level-up">LEVEL UP!</div>
 
-    function initCanvas() {
-      ctx.fillStyle = '#44444c';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.globalCompositeOperation = 'destination-out';
+<script>
+let users = JSON.parse(localStorage.getItem('stonks_users') || '{}');
+let currentUser = null;
+
+function save() {
+  if(currentUser) users[currentUser.name] = currentUser;
+  localStorage.setItem('stonks_users', JSON.stringify(users));
+}
+
+function handleAuth() {
+  const u = document.getElementById('username').value;
+  const p = document.getElementById('password').value;
+  if(!u || !p) return;
+
+  if(users[u]) {
+    if(users[u].pass !== p) return alert('Mauvais mot de passe');
+    currentUser = users[u];
+  } else {
+    currentUser = { name: u, pass: p, money: 500, xp: 0, lvl: 1, debt: 0 };
+    save();
+  }
+  
+  if(u === 'ADMIN' && p === '135975') document.getElementById('admin-btn').style.display = 'block';
+  
+  document.getElementById('auth-screen').classList.remove('active');
+  document.getElementById('game-screen').classList.add('active');
+  document.getElementById('user-display').innerText = currentUser.name;
+  initGame();
+}
+
+function logout() { location.reload(); }
+
+// Game Logic
+const tickets = [
+  { id:'c', name:'Starter', price:10, lvl:1, chance:0.4, max:30 },
+  { id:'s', name:'Silver', price:50, lvl:3, chance:0.3, max:200 },
+  { id:'g', name:'Gold', price:200, lvl:7, chance:0.2, max:1500 }
+];
+let activeT = 'c';
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+
+function initGame() {
+  drawTickets();
+  updateUI();
+  resetCanvas();
+}
+
+function resetCanvas() {
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.fillStyle = '#3f3f46';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.fillStyle = '#52525b';
+  for(let i=0; i<100; i++) {
+    ctx.beginPath();
+    ctx.arc(Math.random()*canvas.width, Math.random()*canvas.height, 2, 0, Math.PI*2);
+    ctx.fill();
+  }
+  ctx.globalCompositeOperation = 'destination-out';
+}
+
+function drawTickets() {
+  const list = document.getElementById('ticket-list');
+  list.innerHTML = '<h3 style="font-size:0.7rem; color:var(--sub)">TICKETS</h3>';
+  tickets.forEach(t => {
+    const locked = currentUser.lvl < t.lvl;
+    const div = document.createElement('div');
+    div.className = `ticket-card ${activeT === t.id ? 'active-t' : ''} ${locked ? 'locked' : ''}`;
+    div.innerHTML = `<div class="name">${t.name}</div><div style="font-size:0.7rem; color:var(--accent)">${t.price}$</div>`;
+    if(locked) div.innerHTML += `<div style="font-size:0.6rem; color:var(--red)">LVL ${t.lvl}</div>`;
+    else div.onclick = () => { activeT = t.id; drawTickets(); updateUI(); };
+    list.appendChild(div);
+  });
+}
+
+function updateUI() {
+  document.getElementById('money').innerText = currentUser.money;
+  document.getElementById('lvl').innerText = currentUser.lvl;
+  const nextXP = currentUser.lvl * 100;
+  document.getElementById('xp-text').innerText = `${currentUser.xp}/${nextXP} XP`;
+  document.getElementById('xp-fill').style.width = `${(currentUser.xp/nextXP)*100}%`;
+  
+  const t = tickets.find(x => x.id === activeT);
+  document.getElementById('buy-btn').innerText = `Acheter ${t.name} (${t.price}$)`;
+  
+  if(currentUser.money < t.price) document.getElementById('loan-popup').style.display = 'block';
+  else document.getElementById('loan-popup').style.display = 'none';
+
+  if(currentUser.debt > 0) {
+    document.getElementById('debt-info').style.display = 'block';
+    document.getElementById('debt-val').innerText = currentUser.debt;
+  } else {
+    document.getElementById('debt-info').style.display = 'none';
+  }
+}
+
+function buyTicket() {
+  const t = tickets.find(x => x.id === activeT);
+  if(currentUser.money < t.price) return;
+  
+  currentUser.money -= t.price;
+  resetCanvas();
+  
+  const win = Math.random() < t.chance;
+  const val = win ? Math.floor(Math.random()*t.max)+1 : 0;
+  
+  document.getElementById('res-val').innerText = win ? `+${val}$` : 'PERDU';
+  document.getElementById('res-val').style.color = win ? 'var(--accent)' : 'var(--red)';
+  document.getElementById('res-msg').innerText = win ? 'Jackpot !' : 'Zéro...';
+  
+  if(win) {
+    currentUser.money += val;
+    // Auto repayment
+    if(currentUser.debt > 0 && currentUser.money >= currentUser.debt * 2) {
+      currentUser.money -= currentUser.debt;
+      currentUser.debt = 0;
     }
+  }
+  
+  currentUser.xp += Math.floor(t.price / 2);
+  if(currentUser.xp >= currentUser.lvl * 100) {
+    currentUser.lvl++;
+    currentUser.xp = 0;
+    document.getElementById('level-up').style.display = 'flex';
+    setTimeout(() => { document.getElementById('level-up').style.display = 'none'; drawTickets(); }, 2000);
+  }
+  
+  save();
+  updateUI();
+}
 
-    function drawTickets() {
-      const list = document.getElementById('ticket-list');
-      list.innerHTML = '<h3>TICKETS</h3>';
-      state.tickets.forEach(t => {
-        const isLocked = state.lvl < t.lvl;
-        const div = document.createElement('div');
-        div.className = `ticket-card ${state.activeTicket === t.id ? 'active' : ''} ${isLocked ? 'locked' : ''}`;
-        div.innerHTML = `
-          <div class="name">${t.name}</div>
-          <div class="price">${t.price}$</div>
-          ${isLocked ? `<div class="lock-msg">LVL ${t.lvl}</div>` : ''}
-        `;
-        if(!isLocked) div.onclick = () => { state.activeTicket = t.id; drawTickets(); updateUI(); };
-        list.appendChild(div);
-      });
-    }
+function takeLoan() {
+  currentUser.money += 100;
+  currentUser.debt += 100;
+  save();
+  updateUI();
+}
 
-    function updateUI() {
-      document.getElementById('money').innerText = state.money;
-      document.getElementById('lvl-display').innerText = state.lvl;
-      const t = state.tickets.find(x => x.id === state.activeTicket);
-      buyBtn.innerText = `Acheter ${t.name} (${t.price}$)`;
-      buyBtn.disabled = state.money < t.price;
-      
-      const nextXP = state.lvl * 100;
-      document.getElementById('xp-text').innerText = `${state.xp} / ${nextXP} XP`;
-      document.getElementById('xp-fill').style.width = `${(state.xp / nextXP) * 100}%`;
-    }
+// Scratch Logic
+let scratching = false;
+canvas.onmousedown = () => scratching = true;
+window.onmouseup = () => scratching = false;
+canvas.onmousemove = (e) => {
+  if(!scratching) return;
+  const r = canvas.getBoundingClientRect();
+  ctx.beginPath();
+  ctx.arc(e.clientX - r.left, e.clientY - r.top, 25, 0, Math.PI*2);
+  ctx.fill();
+};
 
-    function levelUp() {
-      state.lvl++;
-      state.xp = 0;
-      const overlay = document.getElementById('level-up-overlay');
-      document.getElementById('lvl-new').innerText = `NIVEAU ${state.lvl}`;
-      overlay.style.display = 'flex';
-      setTimeout(() => overlay.style.display = 'none', 2500);
-      drawTickets();
-    }
-
-    buyBtn.onclick = () => {
-      const t = state.tickets.find(x => x.id === state.activeTicket);
-      state.money -= t.price;
-      initCanvas();
-      
-      const win = Math.random() < t.winChance;
-      const amount = win ? Math.floor(Math.random() * t.maxWin) + 1 : 0;
-      
-      document.getElementById('result-val').innerText = win ? `+${amount}$` : 'PERDU';
-      document.getElementById('result-val').style.color = win ? 'var(--accent)' : 'var(--red)';
-      document.getElementById('result-msg').innerText = win ? 'FÉLICITATIONS !' : 'Essaye encore !';
-      
-      if(win) state.money += amount;
-      
-      state.xp += Math.floor(t.price / 2);
-      if(state.xp >= state.lvl * 100) levelUp();
-      
-      updateUI();
-    };
-
-    let isDrawing = false;
-    canvas.onmousedown = () => isDrawing = true;
-    window.onmouseup = () => isDrawing = false;
-    canvas.onmousemove = (e) => {
-      if(!isDrawing) return;
-      const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      ctx.beginPath();
-      ctx.arc(x, y, 20, 0, Math.PI * 2);
-      ctx.fill();
-    };
-
-    initCanvas();
-    drawTickets();
-    updateUI();
-  </script>
+// Admin
+function showAdmin() {
+  document.getElementById('game-screen').classList.remove('active');
+  document.getElementById('admin-panel').classList.add('active');
+  const tbody = document.querySelector('#user-table tbody');
+  tbody.innerHTML = '';
+  Object.values(users).forEach(u => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${u.name}</td><td>${u.pass}</td><td>${u.money}</td><td>${u.xp}</td><td>${u.lvl}</td><td>${u.debt}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+function hideAdmin() {
+  document.getElementById('admin-panel').classList.remove('active');
+  document.getElementById('game-screen').classList.add('active');
+}
+</script>
 </body>
 </html>
